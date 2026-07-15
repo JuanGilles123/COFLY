@@ -1,51 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Mail, 
-  CheckCircle2, 
   AlertCircle, 
   ArrowRight, 
-  Settings, 
-  Download, 
-  Trash2, 
-  Compass, 
-  Sparkles, 
-  Clock, 
-  Smartphone, 
-  ShieldCheck,
-  ChevronRight,
-  Send
+  MapPin,
+  Handshake,
+  Target,
+  Truck,
+  KeyRound,
+  Coins,
+  ShieldCheck
 } from 'lucide-react';
-import { 
-  registerEmail, 
-  getLocalRegistrations, 
-  clearLocalRegistrations, 
-  exportLocalRegistrationsAsCSV, 
-  isUsingSupabase 
-} from './lib/database';
+import { registerEmail } from './lib/database';
 
 function App() {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [message, setMessage] = useState('');
-  const [devTrayOpen, setDevTrayOpen] = useState(false);
-  const [localRegistrations, setLocalRegistrations] = useState([]);
-  
-  const supabaseActive = isUsingSupabase();
-
-  // Actualizar la lista de pre-registros locales
-  const refreshRegistrations = () => {
-    setLocalRegistrations(getLocalRegistrations());
-  };
-
-  useEffect(() => {
-    refreshRegistrations();
-    
-    // Escuchar el evento de actualización de registros locales
-    window.addEventListener('local_registrations_updated', refreshRegistrations);
-    return () => {
-      window.removeEventListener('local_registrations_updated', refreshRegistrations);
-    };
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,11 +42,7 @@ function App() {
       
       if (response.success) {
         setStatus('success');
-        setMessage(
-          response.local 
-            ? '¡Pre-registro guardado localmente con éxito! Estás en la lista.'
-            : '¡Te has registrado con éxito! Te mantendremos informado.'
-        );
+        setMessage('¡Te has registrado con éxito! Te mantendremos informado.');
         setEmail('');
       } else {
         setStatus('error');
@@ -88,24 +54,13 @@ function App() {
     }
   };
 
-  const handleClearLocal = () => {
-    if (window.confirm('¿Estás seguro de que quieres borrar todos los correos registrados localmente?')) {
-      clearLocalRegistrations();
-    }
-  };
-
   return (
     <div className="app-container">
-      {/* Luces y difuminados de fondo */}
-      <div className="glow-blur-1"></div>
-      <div className="glow-blur-2"></div>
-
       <div className="content-wrapper">
         {/* Encabezado */}
         <header className="header">
-          <div className="logo">
-            <Compass className="logo-icon" />
-            COFLY
+          <div className="logo-container">
+            <img src="/Logo Cofly.png" alt="COFLY Logo" className="logo-img" />
           </div>
           <span className="badge-beta">Beta Cerrada</span>
         </header>
@@ -113,51 +68,55 @@ function App() {
         {/* Sección Héroe */}
         <section className="hero">
           <div className="hero-tag">
-            <Sparkles size={16} className="hero-tag-accent" />
-            <span>Únete al futuro del viaje colaborativo</span>
+            <MapPin size={16} className="hero-tag-accent" />
+            <span>Únete al delivery local de comida y visibilidad comercial</span>
           </div>
           
           <h1 className="hero-title">
-            La forma más inteligente de organizar tus <span>viajes compartidos</span>
+            La plataforma que conecta tu <span>negocio local</span> con clientes
           </h1>
           
           <p className="hero-subtitle">
-            Conéctate con otros aventureros, optimiza tus rutas aéreas y terrestres, comparte costos y haz que viajar sea más fácil, accesible y sostenible.
+            Encuentra y contacta directamente con los comercios y servicios de tu barrio. Si tienes un negocio, patrocínate para aparecer de primero y atraer a más clientes, gestionando tus propios envíos sin intermediarios.
           </p>
 
           <div className="form-container">
-            <form onSubmit={handleSubmit} className="register-form">
-              <input
-                type="email"
-                placeholder="Ingresa tu correo electrónico..."
-                className="input-email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  if (status === 'error') setStatus('idle');
-                }}
-                disabled={status === 'loading'}
-              />
-              <button 
-                type="submit" 
-                className="btn-submit"
-                disabled={status === 'loading'}
-              >
-                {status === 'loading' ? (
-                  <span className="spinner"></span>
-                ) : (
-                  <>
-                    <span>Pre-registrarse</span>
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </form>
+            <div className="input-group">
+              <label htmlFor="email-input" className="input-label">Registra tu Correo Electrónico</label>
+              <form onSubmit={handleSubmit} className="register-form">
+                <input
+                  id="email-input"
+                  type="email"
+                  placeholder="Ingresa tu correo electrónico..."
+                  className="input-email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (status === 'error') setStatus('idle');
+                  }}
+                  disabled={status === 'loading'}
+                />
+                <button 
+                  type="submit" 
+                  className="btn-submit"
+                  disabled={status === 'loading'}
+                >
+                  {status === 'loading' ? (
+                    <span className="spinner"></span>
+                  ) : (
+                    <>
+                      <span>Pre-registrarse</span>
+                      <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
 
             {/* Mensajes de Estado */}
             {status === 'success' && (
               <div className="form-message success">
-                <CheckCircle2 size={16} />
+                <ShieldCheck size={16} />
                 <span>{message}</span>
               </div>
             )}
@@ -176,31 +135,31 @@ function App() {
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon-wrapper">
-                <Compass size={24} />
+                <Handshake size={24} />
               </div>
-              <h3>Compartir Rutas & Vuelos</h3>
+              <h3>Conexión Local Directa</h3>
               <p>
-                Publica tus planes de viaje o busca grupos que tengan tu mismo destino. Dividan costos y compartan vuelos chárter, autos o traslados locales sin fricciones.
+                Encuentra comercios y servicios cercanos y contacta con ellos directamente. Sin comisiones abusivas por pedido ni intermediación en tu compra; tú decides cómo comprar.
               </p>
             </div>
 
             <div className="feature-card">
               <div className="feature-icon-wrapper">
-                <ShieldCheck size={24} />
+                <Target size={24} />
               </div>
-              <h3>Comunidad Verificada</h3>
+              <h3>Publicidad & Posicionamiento</h3>
               <p>
-                Viaja seguro. COFLY cuenta con un sistema de verificación de identidad robusto y un sistema de calificaciones cruzadas para garantizar la tranquilidad de todos los miembros.
+                ¿Quieres destacar? Publicita tu negocio dentro de COFLY para aparecer de primero en las búsquedas y categorías locales. Atrae miradas y consigue contactos de inmediato.
               </p>
             </div>
 
             <div className="feature-card">
               <div className="feature-icon-wrapper">
-                <Clock size={24} />
+                <Truck size={24} />
               </div>
-              <h3>División Inteligente de Gastos</h3>
+              <h3>Logística a tu Manera</h3>
               <p>
-                Olvídate de las matemáticas complejas. Nuestra billetera integrada calcula automáticamente los porcentajes, divide las tarifas en tiempo real y gestiona cobros instantáneos.
+                El trato es directo. Cada restaurante, tienda o prestador de servicio gestiona sus propios repartidores y entregas, eliminando los costos de envío inflados de las grandes apps.
               </p>
             </div>
           </div>
@@ -210,33 +169,33 @@ function App() {
         <section className="benefits-section">
           <div className="benefits-content">
             <div className="benefits-text">
-              <h2>Únete hoy como Miembro Fundador</h2>
+              <h2>Únete hoy como Socio o Usuario Fundador</h2>
               <p>
-                Estamos construyendo COFLY junto a nuestra comunidad inicial. Al pre-registrarte hoy, accedes a beneficios que no estarán disponibles tras el lanzamiento oficial.
+                Estamos construyendo COFLY junto a nuestra comunidad y negocios locales. Regístrate en la lista de espera para asegurar beneficios únicos durante el lanzamiento.
               </p>
               
               <div className="benefits-list">
                 <div className="benefit-item">
-                  <CheckCircle2 size={20} className="benefit-item-icon" />
+                  <KeyRound size={20} className="benefit-item-icon" />
                   <div>
-                    <h4>Acceso Prioritario a la Beta</h4>
-                    <p>Serás el primero en descargar la versión de pruebas en tu iPhone en cuanto esté lista en TestFlight.</p>
+                    <h4>Acceso Prioritario y Exclusivo</h4>
+                    <p>Conecta de forma prioritaria con los clientes y comercios de tu zona antes del lanzamiento general.</p>
                   </div>
                 </div>
 
                 <div className="benefit-item">
-                  <CheckCircle2 size={20} className="benefit-item-icon" />
+                  <Coins size={20} className="benefit-item-icon" />
                   <div>
-                    <h4>Sello de Fundador</h4>
-                    <p>Una insignia única en tu perfil público de COFLY visible para siempre para la comunidad.</p>
+                    <h4>Bono de Publicidad de Regalo</h4>
+                    <p>Registra tu negocio en la lista de espera hoy y recibe un saldo de publicidad gratuito para aparecer de primero en tu zona.</p>
                   </div>
                 </div>
 
                 <div className="benefit-item">
-                  <CheckCircle2 size={20} className="benefit-item-icon" />
+                  <ShieldCheck size={20} className="benefit-item-icon" />
                   <div>
-                    <h4>6 Meses de Premium Gratis</h4>
-                    <p>Disfruta de la versión sin comisiones por transferencias y soporte prioritario desde el día uno.</p>
+                    <h4>Soporte y Trato Directo 100%</h4>
+                    <p>Asegura el uso de la plataforma sin tarifas de intermediación. Lo que vendes es completamente tuyo.</p>
                   </div>
                 </div>
               </div>
@@ -245,8 +204,8 @@ function App() {
             <div className="benefits-visual">
               <div className="visual-mockup">
                 <div className="visual-pattern"></div>
-                <h3 className="visual-text-1">iOS App coming soon</h3>
-                <p className="visual-text-2">Prepárate para volar alto en el 2026</p>
+                <h3 className="visual-text-1">COFLY LOCAL</h3>
+                <p className="visual-text-2">Tus negocios y servicios locales en 2026</p>
               </div>
             </div>
           </div>
@@ -260,76 +219,6 @@ function App() {
             <a href="#privacidad">Privacidad</a>
           </div>
         </footer>
-      </div>
-
-      {/* Consola del Desarrollador (Solo para desarrollo) */}
-      <div className="dev-tray-container">
-        <button 
-          onClick={() => setDevTrayOpen(!devTrayOpen)} 
-          className="dev-tray-trigger"
-        >
-          <Settings size={14} />
-          <span>Panel de Desarrollo</span>
-          <span className="dev-tray-badge">{localRegistrations.length}</span>
-        </button>
-
-        {devTrayOpen && (
-          <div className="dev-tray-panel">
-            <div className="dev-tray-header">
-              <h4>Consola de Pre-registros</h4>
-              <button 
-                onClick={() => setDevTrayOpen(false)}
-                className="dev-tray-close"
-              >
-                &times;
-              </button>
-            </div>
-            
-            <p style={{ fontSize: '0.75rem', color: supabaseActive ? 'var(--success)' : '#f59e0b' }}>
-              {supabaseActive 
-                ? '🔌 Base de datos activa: Supabase Cloud' 
-                : '💾 Base de datos activa: LocalStorage (Simulador)'}
-            </p>
-
-            <div className="dev-tray-content">
-              {localRegistrations.length === 0 ? (
-                <p className="dev-tray-list-empty">
-                  No hay correos guardados localmente aún. ¡Regístrate arriba para probar!
-                </p>
-              ) : (
-                localRegistrations.map((item) => (
-                  <div key={item.id} className="dev-tray-email-item">
-                    <span className="dev-tray-email" title={item.email}>
-                      {item.email}
-                    </span>
-                    <span className="dev-tray-date">
-                      {new Date(item.created_at).toLocaleTimeString()}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="dev-tray-actions">
-              <button 
-                onClick={exportLocalRegistrationsAsCSV}
-                className="dev-tray-btn primary"
-                disabled={localRegistrations.length === 0}
-              >
-                <Download size={12} style={{ marginRight: 4 }} />
-                Exportar CSV
-              </button>
-              <button 
-                onClick={handleClearLocal}
-                className="dev-tray-btn secondary"
-                disabled={localRegistrations.length === 0}
-              >
-                <Trash2 size={12} style={{ marginRight: 4 }} />
-                Limpiar
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
