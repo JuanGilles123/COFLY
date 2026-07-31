@@ -243,12 +243,13 @@ html, body {
 
 .register-form {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 16px;
   width: 100%;
 }
 
-.input-email {
-  flex: 1;
+.input-email, .input-field {
+  width: 100%;
   background-color: var(--surface-container-low); /* #F3F4F6 */
   border: 1px solid var(--outline-variant); /* Taupe border equivalent */
   border-radius: var(--rounded-default); /* 0.5rem */
@@ -260,12 +261,12 @@ html, body {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.input-email:focus {
+.input-email:focus, .input-field:focus {
   border-color: var(--navy);
   box-shadow: 0 0 0 3px rgba(37, 26, 101, 0.1);
 }
 
-.input-email:disabled {
+.input-email:disabled, .input-field:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -279,12 +280,13 @@ html, body {
   color: var(--on-primary);
   border: none;
   border-radius: var(--rounded-default); /* 0.5rem */
-  padding: 12px 24px;
+  padding: 14px 24px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-fast);
   white-space: nowrap;
+  width: 100%;
 }
 
 .btn-submit:hover:not(:disabled) {
@@ -294,16 +296,6 @@ html, body {
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-@media (max-width: 600px) {
-  .register-form {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .btn-submit {
-    width: 100%;
-  }
 }
 
 /* Mensajes de Estado */

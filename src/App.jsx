@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   AlertCircle, 
   ArrowRight, 
@@ -14,11 +14,18 @@ import { registerEmail } from './lib/database';
 
 function App() {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!name.trim()) {
+      setStatus('error');
+      setMessage('Por favor, ingresa tu nombre completo.');
+      return;
+    }
     
     if (!email) {
       setStatus('error');
@@ -38,17 +45,18 @@ function App() {
     setMessage('');
 
     try {
-      const response = await registerEmail(email);
+      const response = await registerEmail(email, name);
       
       if (response.success) {
         setStatus('success');
         setMessage('¡Te has registrado con éxito! Te mantendremos informado.');
         setEmail('');
+        setName('');
       } else {
         setStatus('error');
         setMessage(response.error || 'Ocurrió un error inesperado.');
       }
-    } catch (err) {
+    } catch {
       setStatus('error');
       setMessage('Error de red. Inténtalo de nuevo más tarde.');
     }
@@ -81,14 +89,29 @@ function App() {
           </p>
 
           <div className="form-container">
-            <div className="input-group">
-              <label htmlFor="email-input" className="input-label">Registra tu Correo Electrónico</label>
-              <form onSubmit={handleSubmit} className="register-form">
+            <form onSubmit={handleSubmit} className="register-form">
+              <div className="input-group">
+                <label htmlFor="name-input" className="input-label">Nombre Completo</label>
+                <input
+                  id="name-input"
+                  type="text"
+                  placeholder="Tu nombre completo..."
+                  className="input-field"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    if (status === 'error') setStatus('idle');
+                  }}
+                  disabled={status === 'loading'}
+                />
+              </div>
+              <div className="input-group">
+                <label htmlFor="email-input" className="input-label">Correo Electrónico</label>
                 <input
                   id="email-input"
                   type="email"
                   placeholder="Ingresa tu correo electrónico..."
-                  className="input-email"
+                  className="input-field"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -96,22 +119,22 @@ function App() {
                   }}
                   disabled={status === 'loading'}
                 />
-                <button 
-                  type="submit" 
-                  className="btn-submit"
-                  disabled={status === 'loading'}
-                >
-                  {status === 'loading' ? (
-                    <span className="spinner"></span>
-                  ) : (
-                    <>
-                      <span>Pre-registrarse</span>
-                      <ArrowRight size={18} />
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
+              </div>
+              <button 
+                type="submit" 
+                className="btn-submit"
+                disabled={status === 'loading'}
+              >
+                {status === 'loading' ? (
+                  <span className="spinner"></span>
+                ) : (
+                  <>
+                    <span>Pre-registrarse</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+            </form>
 
             {/* Mensajes de Estado */}
             {status === 'success' && (

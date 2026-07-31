@@ -26,23 +26,70 @@ if (isSupabaseConfigured) {
 }
 
 /**
+ * Obtiene la dirección IP y datos de ubicación geográfica del usuario de forma anónima
+ * @returns {Promise<{ip: string|null, city: string|null, region: string|null, country: string|null, user_agent: string|null}>}
+ */
+async function getUserLocation() {
+  try {
+    const res = await fetch('https://freeipapi.com/api/json');
+    if (!res.ok) throw new Error('Respuesta de red no válida');
+    const data = await res.json();
+    return {
+      ip: data.ipAddress || null,
+      city: data.cityName || null,
+      region: data.regionName || null,
+      country: data.countryName || null,
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null
+    };
+  } catch (err) {
+    console.warn('⚠️ No se pudo obtener la geolocalización del usuario:', err);
+    return {
+      ip: null,
+      city: null,
+      region: null,
+      country: null,
+      user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null
+    };
+  }
+}
+
+/**
  * Registra un correo en la base de datos (Supabase o LocalStorage)
  * @param {string} email 
+ * @param {string} name
  * @returns {Promise<{success: boolean, error?: string, local?: boolean}>}
  */
-export async function registerEmail(email) {
-  // Limpieza básica del email
+export async function registerEmail(email, name = '') {
+  // Limpieza básica del email y nombre
   const cleanEmail = email.trim().toLowerCase();
+  const cleanName = name.trim();
+  
+  if (!cleanName) {
+    return { success: false, error: 'Por favor, ingresa tu nombre completo.' };
+  }
   
   if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
     return { success: false, error: 'Por favor, ingresa un correo electrónico válido.' };
   }
 
+  // Obtener geolocalización (no bloquea al usuario si hay un fallo de red o adblocker)
+  const location = await getUserLocation();
+
   if (isSupabaseConfigured && supabase) {
     try {
-      const { data, error } = await supabase
+      // Construir el objeto de inserción omitiendo campos nulos
+      // Esto permite que el Trigger de Postgres autocomplete la IP y el País si el cliente no pudo obtenerlos
+      const insertData = { email: cleanEmail };
+      if (cleanName) insertData.name = cleanName;
+      if (location.ip) insertData.ip = location.ip;
+      if (location.city) insertData.city = location.city;
+      if (location.region) insertData.region = location.region;
+      if (location.country) insertData.country = location.country;
+      if (location.user_agent) insertData.user_agent = location.user_agent;
+
+      const { error } = await supabase
         .from('pre_registrations')
-        .insert([{ email: cleanEmail }]);
+        .insert([insertData]);
 
       if (error) {
         // Manejar el caso de correo duplicado
@@ -72,10 +119,16 @@ export async function registerEmail(email) {
         return { success: false, error: 'Este correo electrónico ya está registrado en local.' };
       }
 
-      // Agregar nuevo pre-registro
+      // Agregar nuevo pre-registro con ubicación y nombre
       list.push({
         id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+        name: cleanName || null,
         email: cleanEmail,
+        ip: location.ip,
+        city: location.city,
+        region: location.region,
+        country: location.country,
+        user_agent: location.user_agent,
         created_at: new Date().toISOString()
       });
 
