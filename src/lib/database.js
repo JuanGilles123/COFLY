@@ -57,15 +57,21 @@ async function getUserLocation() {
  * Registra un correo en la base de datos (Supabase o LocalStorage)
  * @param {string} email 
  * @param {string} name
+ * @param {string} phone
  * @returns {Promise<{success: boolean, error?: string, local?: boolean}>}
  */
-export async function registerEmail(email, name = '') {
-  // Limpieza básica del email y nombre
+export async function registerEmail(email, name = '', phone = '') {
+  // Limpieza básica del email, nombre y teléfono
   const cleanEmail = email.trim().toLowerCase();
   const cleanName = name.trim();
+  const cleanPhone = phone.trim();
   
   if (!cleanName) {
     return { success: false, error: 'Por favor, ingresa tu nombre completo.' };
+  }
+
+  if (!cleanPhone) {
+    return { success: false, error: 'Por favor, ingresa tu número de teléfono.' };
   }
   
   if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
@@ -81,6 +87,7 @@ export async function registerEmail(email, name = '') {
       // Esto permite que el Trigger de Postgres autocomplete la IP y el País si el cliente no pudo obtenerlos
       const insertData = { email: cleanEmail };
       if (cleanName) insertData.name = cleanName;
+      if (cleanPhone) insertData.phone = cleanPhone;
       if (location.ip) insertData.ip = location.ip;
       if (location.city) insertData.city = location.city;
       if (location.region) insertData.region = location.region;
@@ -124,6 +131,7 @@ export async function registerEmail(email, name = '') {
         id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
         name: cleanName || null,
         email: cleanEmail,
+        phone: cleanPhone || null,
         ip: location.ip,
         city: location.city,
         region: location.region,

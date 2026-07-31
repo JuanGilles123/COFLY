@@ -6,10 +6,11 @@ DROP TRIGGER IF EXISTS trigger_set_pre_registration_defaults ON public.pre_regis
 DROP FUNCTION IF EXISTS public.set_pre_registration_defaults();
 DROP TABLE IF EXISTS public.pre_registrations;
 
--- 1. Crear la tabla de pre-registros con soporte para nombre y dispositivo (user_agent)
+-- 1. Crear la tabla de pre-registros con soporte para nombre, teléfono y dispositivo (user_agent)
 CREATE TABLE public.pre_registrations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL, -- Nombre obligatorio
+    phone TEXT, -- Teléfono
     email TEXT UNIQUE NOT NULL,
     ip TEXT,
     city TEXT,
