@@ -741,89 +741,116 @@ function App() {
               </button>
             </div>
 
-            {/* Visualización del mapa simulado */}
+            {/* Visualización de la animación del repartidor en moto estilo vector */}
             <div className="map-visual-box">
-              <div className="map-canvas">
-                {/* Red de calles simuladas */}
-                <div className="street-line line-horizontal-1"></div>
-                <div className="street-line line-horizontal-2"></div>
-                <div className="street-line line-vertical-1"></div>
-                <div className="street-line line-vertical-2"></div>
-                
-                {/* Punto de entrega (Cliente) */}
-                <div className="map-node node-client">
-                  <div className="node-avatar-circle client-avatar-circle">
-                    <Home size={20} className="node-client-icon" />
-                  </div>
-                  <span>Vecino</span>
+              <div className="delivery-animation-container">
+                {/* Silueta de la ciudad en movimiento */}
+                <div className="delivery-bg-scroller">
+                  <div className="skyline-silhouette"></div>
+                  <div className="trees-silhouette"></div>
                 </div>
 
-                {/* Punto de origen (Comercio según categoría) */}
-                <div className="map-node node-shop">
-                  <div className="node-avatar-circle" style={{ backgroundColor: mapData[mapCategory].color }}>
-                    <span className="node-shop-icon">{mapData[mapCategory].icon}</span>
-                  </div>
-                  <span className="node-shop-name">{mapData[mapCategory].shopName}</span>
+                {/* Líneas de viento para simular velocidad */}
+                <div className="wind-lines-container">
+                  <div className="wind-line wind-1"></div>
+                  <div className="wind-line wind-2"></div>
+                  <div className="wind-line wind-3"></div>
                 </div>
 
-                {/* Ruta de Domicilio */}
-                <svg className="delivery-svg-path" width="100%" height="100%" viewBox="0 0 500 280">
-                  <path 
-                    id="delivery-path"
-                    d="M 100,70 L 380,70 L 380,210" 
-                    fill="none" 
-                    stroke="rgba(255, 255, 255, 0.15)" 
-                    strokeWidth="4" 
-                    strokeDasharray="6,6"
-                  />
-                  {/* Animación del trazado en camino */}
-                  <AnimatePresence>
-                    {isDelivering && (
-                      <motion.path 
-                        d="M 100,70 L 380,70 L 380,210" 
-                        fill="none" 
-                        stroke={mapData[mapCategory].color} 
-                        strokeWidth="4"
-                        strokeDasharray="6,6"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 2.2, ease: "easeInOut" }}
-                      />
-                    )}
-                  </AnimatePresence>
-                </svg>
-
-                {/* Repartidor en movimiento */}
-                {isDelivering && (
+                {/* Ilustración del repartidor en moto (Bote constante en vertical) */}
+                <div className="rider-wrapper-container">
                   <motion.div 
-                    className="map-motorcycle-carrier"
-                    style={{ position: 'absolute', top: 0, left: 0 }}
+                    className="rider-illustration-box"
                     animate={{
-                      x: [100, 380, 380],
-                      y: [70, 70, 210],
+                      y: [0, -5, 0],
                     }}
                     transition={{
-                      duration: 2.2,
+                      duration: 0.6,
+                      repeat: Infinity,
                       ease: "easeInOut"
                     }}
                   >
-                    <div className="moto-bubble" style={{ border: `2px solid ${mapData[mapCategory].color}` }}>
-                      <Bike size={16} style={{ color: mapData[mapCategory].color }} />
-                    </div>
+                    <svg width="150" height="150" viewBox="0 0 150 150" fill="none" className="rider-svg-element">
+                      {/* Rueda Trasera */}
+                      <g className="wheel-back">
+                        <circle cx="35" cy="115" r="16" stroke="var(--primary)" strokeWidth="3" fill="#121522" />
+                        <circle cx="35" cy="115" r="8" stroke="var(--outline-variant)" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <line x1="35" y1="99" x2="35" y2="131" stroke="var(--outline-variant)" strokeWidth="1.5" />
+                        <line x1="19" y1="115" x2="51" y2="115" stroke="var(--outline-variant)" strokeWidth="1.5" />
+                      </g>
+                      
+                      {/* Rueda Delantera */}
+                      <g className="wheel-front">
+                        <circle cx="115" cy="115" r="16" stroke="var(--primary)" strokeWidth="3" fill="#121522" />
+                        <circle cx="115" cy="115" r="8" stroke="var(--outline-variant)" strokeWidth="1.5" strokeDasharray="3 3" />
+                        <line x1="115" y1="99" x2="115" y2="131" stroke="var(--outline-variant)" strokeWidth="1.5" />
+                        <line x1="99" y1="115" x2="131" y2="115" stroke="var(--outline-variant)" strokeWidth="1.5" />
+                      </g>
+
+                      {/* Chasis de la Moto */}
+                      <path d="M 35 115 L 60 115 L 75 120 L 98 120 L 108 90 L 115 115" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M 98 120 L 108 82 L 100 80" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                      
+                      {/* Motor / Batería */}
+                      <rect x="42" y="98" width="18" height="15" rx="3" fill="var(--primary)" stroke="var(--secondary)" strokeWidth="1.5" />
+                      
+                      {/* Caja de Reparto COFLY */}
+                      <rect x="18" y="62" width="30" height="32" rx="4" fill="var(--secondary)" stroke="var(--on-primary)" strokeWidth="1.5" />
+                      <path d="M 18 78 L 48 78" stroke="var(--on-primary)" strokeWidth="2" />
+                      <circle cx="33" cy="70" r="3" fill="var(--on-primary)" />
+
+                      {/* Repartidor (Esqueleto geométrico limpio) */}
+                      <path d="M 52 86 L 76 96 L 82 118" stroke="var(--primary)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M 52 86 L 68 62" stroke="var(--secondary)" strokeWidth="6" strokeLinecap="round" />
+                      <path d="M 68 62 L 92 68 L 105 81" stroke="var(--secondary)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <line x1="68" y1="62" x2="72" y2="54" stroke="var(--outline-variant)" strokeWidth="2.5" />
+                      <circle cx="75" cy="48" r="8.5" fill="var(--primary)" />
+                      <path d="M 75 42 Q 85 45 83 52" stroke="var(--secondary)" strokeWidth="2" fill="none" strokeLinecap="round" />
+                    </svg>
+                    
+                    {/* Burbuja flotante con el pedido */}
+                    <AnimatePresence mode="wait">
+                      <motion.div 
+                        key={mapCategory}
+                        className="rider-order-bubble"
+                        style={{ border: `2px solid ${mapData[mapCategory].color}` }}
+                        initial={{ scale: 0, opacity: 0, y: 15 }}
+                        animate={{ scale: 1, opacity: 1, y: 0 }}
+                        exit={{ scale: 0, opacity: 0, y: -15 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                      >
+                        <div className="rider-bubble-icon" style={{ backgroundColor: mapData[mapCategory].color }}>
+                          {mapData[mapCategory].icon}
+                        </div>
+                        <span className="rider-bubble-text">{mapData[mapCategory].productName}</span>
+                      </motion.div>
+                    </AnimatePresence>
                   </motion.div>
-                )}
+                </div>
+
+                {/* Carretera y líneas del asfalto en movimiento */}
+                <div className="road-container">
+                  <div className="road-surface"></div>
+                  <div className="road-dashes-wrapper">
+                    <div className="road-dash"></div>
+                    <div className="road-dash"></div>
+                    <div className="road-dash"></div>
+                    <div className="road-dash"></div>
+                    <div className="road-dash"></div>
+                    <div className="road-dash"></div>
+                  </div>
+                </div>
 
                 {/* Notificación flotante de entrega */}
                 <div className="map-delivery-notification">
                   <div className="notif-bar" style={{ backgroundColor: mapData[mapCategory].color }}></div>
                   <div className="notif-body">
-                    <span className="notif-title">Entrega COFLY</span>
+                    <span className="notif-title">Entrega COFLY en curso</span>
                     <span className="notif-desc">
                       {isDelivering ? (
-                        <>Repartiendo <strong>{mapData[mapCategory].productName}</strong> ({mapData[mapCategory].delay})</>
+                        <>Llevando <strong>{mapData[mapCategory].productName}</strong> desde <strong>{mapData[mapCategory].shopName}</strong> ({mapData[mapCategory].delay})</>
                       ) : (
-                        <>¡Pedido entregado en tiempo récord! ✅</>
+                        <>¡Pedido entregado con éxito por el comercio! ✅</>
                       )}
                     </span>
                   </div>

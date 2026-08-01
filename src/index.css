@@ -1753,126 +1753,206 @@ html, body {
   align-items: center;
 }
 
-.map-canvas {
-  width: 500px;
-  height: 280px;
+.delivery-animation-container {
+  width: 100%;
+  height: 100%;
   position: relative;
-  flex-shrink: 0;
-}
-
-.street-line {
-  position: absolute;
-  background: #1c202d;
-}
-
-.line-horizontal-1 {
-  top: 70px; left: 0; width: 100%; height: 6px;
-}
-
-.line-horizontal-2 {
-  top: 210px; left: 0; width: 100%; height: 6px;
-}
-
-.line-vertical-1 {
-  left: 120px; top: 0; width: 6px; height: 100%;
-}
-
-.line-vertical-2 {
-  left: 380px; top: 0; width: 6px; height: 100%;
-}
-
-.map-node {
-  position: absolute;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  z-index: 3;
+  justify-content: flex-end;
+  background: linear-gradient(to bottom, #111424 0%, #080a12 100%);
 }
 
-.map-node span {
-  font-size: 11px;
-  font-weight: 600;
-  color: #a0aec0;
-  background: rgba(15, 17, 26, 0.8);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.node-client {
-  top: 188px;
-  left: 358px;
-}
-
-.client-avatar-circle {
-  background-color: var(--navy);
-  border: 2px solid var(--primary);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.node-client-icon {
-  color: white;
-}
-
-.node-shop {
-  top: 48px;
-  left: 78px;
-}
-
-.msg-avatar-icon-wrapper {
-  background: var(--surface-container-high);
-  color: var(--navy);
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+/* Fondo de ciudad en movimiento (Efecto Parallax) */
+.delivery-bg-scroller {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  width: 200%;
+  height: 60%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.15;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
-.node-avatar-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-  border: 2px solid white;
+.skyline-silhouette {
+  width: 100%;
+  height: 60px;
+  background-image: repeating-linear-gradient(90deg, #5c6489 0px, #5c6489 40px, transparent 40px, transparent 80px);
+  animation: scrollSkyline 16s linear infinite;
 }
 
-.node-shop-icon {
-  font-size: 20px;
+.trees-silhouette {
+  width: 100%;
+  height: 30px;
+  background-image: repeating-linear-gradient(90deg, #464e75 0px, #464e75 15px, transparent 15px, transparent 45px);
+  animation: scrollSkyline 8s linear infinite;
+  margin-top: -10px;
 }
 
-.delivery-svg-path {
+@keyframes scrollSkyline {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Líneas de viento rápidas */
+.wind-lines-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 70%;
+  overflow: hidden;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
-.map-motorcycle-carrier {
-  width: 24px;
-  height: 24px;
-  z-index: 4;
+.wind-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  border-radius: 1px;
+  animation: windFlow 1.2s linear infinite;
 }
 
-.moto-bubble {
-  width: 32px;
-  height: 32px;
+.wind-1 {
+  top: 25%;
+  width: 90px;
+  animation-delay: 0s;
+}
+
+.wind-2 {
+  top: 45%;
+  width: 130px;
+  animation-delay: 0.3s;
+  animation-duration: 0.9s;
+}
+
+.wind-3 {
+  top: 65%;
+  width: 70px;
+  animation-delay: 0.6s;
+}
+
+@keyframes windFlow {
+  from { left: 100%; }
+  to { left: -150px; }
+}
+
+/* Contenedor del Personaje */
+.rider-wrapper-container {
+  position: absolute;
+  bottom: 38px;
+  left: 12%;
+  z-index: 3;
+}
+
+.rider-illustration-box {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rider-svg-element {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.45));
+}
+
+.wheel-back {
+  transform-origin: 35px 115px;
+  animation: spinWheel 0.6s linear infinite;
+}
+
+.wheel-front {
+  transform-origin: 115px 115px;
+  animation: spinWheel 0.6s linear infinite;
+}
+
+@keyframes spinWheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Burbuja flotante de pedido */
+.rider-order-bubble {
+  position: absolute;
+  top: -10px;
+  right: -25px;
   background: white;
+  padding: 8px 14px;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.rider-bubble-icon {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  transform: translate(-50%, -50%);
+  color: white;
+  flex-shrink: 0;
+}
+
+.rider-bubble-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* Carretera y asfalto */
+.road-container {
+  width: 100%;
+  height: 48px;
+  background-color: #171b2d;
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid #2d3356;
+}
+
+.road-surface {
+  width: 100%;
+  height: 100%;
+  background: #111322;
+}
+
+.road-dashes-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 200%;
+  height: 4px;
+  display: flex;
+  gap: 50px;
+  transform: translateY(-50%);
+  animation: scrollRoad 0.6s linear infinite;
+}
+
+.road-dash {
+  width: 40px;
+  height: 100%;
+  background-color: #ffd29c;
+  opacity: 0.35;
+  border-radius: 2px;
+}
+
+@keyframes scrollRoad {
+  from { transform: translate3d(0, -50%, 0); }
+  to { transform: translate3d(-90px, -50%, 0); } /* dash 40px + gap 50px = 90px */
 }
 
 .map-delivery-notification {
