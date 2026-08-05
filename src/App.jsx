@@ -2,31 +2,24 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   AlertCircle, 
   ArrowRight, 
-  MapPin,
-  Handshake,
+  MapPoint,
   Target,
   Truck,
-  KeyRound,
+  Key,
   Coins,
   ShieldCheck,
   Store,
   ShoppingBag,
   Compass,
-  Bike,
-  MessageSquare,
-  CheckCircle2,
+  Bicycle,
+  ChatSquare,
+  CheckCircle,
   Clock,
   Sparkles,
-  ChevronRight,
-  Home,
-  Utensils,
-  Apple,
-  Pill,
-  Shirt,
   User
-} from 'lucide-react';
+} from 'reicon-react';
 import { registerEmail } from './lib/database';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 // Componente de Contador Animado
 function AnimatedCounter({ value, suffix = "", duration = 2 }) {
@@ -35,12 +28,12 @@ function AnimatedCounter({ value, suffix = "", duration = 2 }) {
   const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
+    const currentElement = elementRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
         if (entry.isIntersecting && !hasRun) {
           setHasRun(true);
-          let start = 0;
           const end = parseInt(value, 10);
           if (isNaN(end)) {
             setCount(value);
@@ -67,19 +60,109 @@ function AnimatedCounter({ value, suffix = "", duration = 2 }) {
       { threshold: 0.1 }
     );
 
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
+    if (currentElement) {
+      observer.observe(currentElement);
     }
 
     return () => {
-      if (elementRef.current) observer.unobserve(elementRef.current);
+      if (currentElement) observer.unobserve(currentElement);
     };
   }, [value, duration, hasRun]);
 
   return <span ref={elementRef}>{count}{suffix}</span>;
 }
 
+// Componente para la pantalla de Error (Página no encontrada o Caída del sistema)
+function NotFoundPage({ 
+  title = "Página no encontrada", 
+  description = "Lo sentimos, el enlace al que intentas acceder no está disponible o no existe en nuestra plataforma.", 
+  buttonText = "Volver al Inicio", 
+  onNavigateHome 
+}) {
+  return (
+    <div className="not-found-container">
+      {/* Fondos dinámicos en capas */}
+      <div className="grid-bg"></div>
+      <div className="glow-bg"></div>
+      
+      <div className="not-found-content">
+        <div className="not-found-image-wrapper">
+          <img 
+            src="/animations/Error%20404.svg" 
+            alt="Error" 
+            className="not-found-image"
+          />
+        </div>
+        <h1 className="not-found-title">{title}</h1>
+        <p className="not-found-description">{description}</p>
+        <button className="not-found-btn" onClick={onNavigateHome}>
+          {buttonText} <ArrowRight size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Error Boundary para capturar caídas del sistema
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <NotFoundPage 
+          title="Algo salió mal"
+          description="Lo sentimos, ocurrió un error inesperado al cargar la aplicación. Por favor, intenta recargar la página."
+          buttonText="Recargar Página"
+          onNavigateHome={() => window.location.reload()} 
+        />
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 function App() {
+  // Estado para manejar la ruta actual (Error 404)
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    
+    // Interceptar pushState/replaceState
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleLocationChange();
+    };
+    const originalReplaceState = window.history.replaceState;
+    window.history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      handleLocationChange();
+    };
+    
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
+    };
+  }, []);
+
   // Formulario superior
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -97,15 +180,7 @@ function App() {
   // Estado para las FAQ
   const [openFaq, setOpenFaq] = useState(null);
 
-  // Estado del Mapa Interactivo
-  const [mapCategory, setMapCategory] = useState('pizza'); // pizza | groceries | pharmacy | shopping
-  const [isDelivering, setIsDelivering] = useState(false);
-  const [animationKey, setAnimationKey] = useState(0);
 
-  const handleMapCategoryChange = (category) => {
-    setMapCategory(category);
-    setAnimationKey(prev => prev + 1);
-  };
 
   // Scroll animations targetting the Hero section
   const containerRef = useRef(null);
@@ -146,14 +221,7 @@ function App() {
     card.style.setProperty('--my', 0.5);
   };
 
-  // Simulación de entrega del mapa interactivo al cambiar de categoría
-  useEffect(() => {
-    setIsDelivering(true);
-    const timer = setTimeout(() => {
-      setIsDelivering(false);
-    }, 2400); // Duración de la animación de reparto
-    return () => clearTimeout(timer);
-  }, [mapCategory, animationKey]);
+  // Cambios de categoría de mapa interactivo
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -259,40 +327,22 @@ function App() {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  // Datos para el mapa interactivo según categoría
-  const mapData = {
-    pizza: {
-      shopName: "Pizzería Luigi",
-      productName: "Pizza Familiar",
-      icon: <Utensils size={20} />,
-      color: "#EF5F18",
-      delay: "8-12 min"
-    },
-    groceries: {
-      shopName: "Frutería Don Julio",
-      productName: "Frutas y Verduras",
-      icon: <Apple size={20} />,
-      color: "#10B981",
-      delay: "10-15 min"
-    },
-    pharmacy: {
-      shopName: "Droguería El Alivio",
-      productName: "Medicamentos",
-      icon: <Pill size={20} />,
-      color: "#3B82F6",
-      delay: "5-10 min"
-    },
-    shopping: {
-      shopName: "Boutique Aurora",
-      productName: "Ropa & Moda local",
-      icon: <Shirt size={20} />,
-      color: "#8B5CF6",
-      delay: "12-18 min"
-    }
-  };
+
+
+  if (currentPath !== '/' && currentPath !== '/index.html') {
+    return (
+      <NotFoundPage 
+        title="Página no encontrada"
+        description="Lo sentimos, el enlace al que intentas acceder no está disponible o no existe en nuestra plataforma."
+        buttonText="Volver al Inicio"
+        onNavigateHome={() => window.history.pushState({}, '', '/')} 
+      />
+    );
+  }
 
   return (
-    <div className="app-container">
+    <ErrorBoundary>
+      <div className="app-container">
       {/* Fondos dinámicos en capas */}
       <div className="grid-bg"></div>
       <div className="glow-bg"></div>
@@ -405,7 +455,7 @@ function App() {
                   className="floating-element pin-float"
                   style={{ y: floatY1, rotate: -12 }}
                 >
-                  <MapPin size={18} className="float-icon" />
+                  <MapPoint size={18} className="float-icon" />
                   <span>Cerca de ti</span>
                 </motion.div>
                 
@@ -426,6 +476,13 @@ function App() {
                 </motion.div>
 
                 {/* El Móvil 3D */}
+                {/* 
+                  💡 PASO PARA USAR UN SVG ANIMADO EN EL HÉROE:
+                  Si prefieres usar un SVG animado (ej. colocado en public/animations/hero.svg),
+                  descomenta la siguiente línea y puedes ocultar/remover el motion.div de "phone-3d-wrapper" de abajo.
+                  
+                  <img src="/animations/hero.svg" className="hero-svg-animation" alt="COFLY Animación Principal" style={{ width: '100%', height: 'auto', maxHeight: '480px', margin: '0 auto', display: 'block' }} />
+                */}
                 <motion.div 
                   className="phone-3d-wrapper"
                   style={{ 
@@ -447,7 +504,7 @@ function App() {
                           <div className="map-circle ripple-1"></div>
                           <div className="map-circle ripple-2"></div>
                           <div className="map-pin-indicator index-1">
-                            <MapPin size={14} />
+                            <MapPoint size={14} />
                           </div>
                           <div className="map-pin-indicator index-2">
                             <Store size={14} />
@@ -497,7 +554,7 @@ function App() {
             >
               <div className="bento-text-side">
                 <div className="bento-icon-wrapper">
-                  <MessageSquare size={22} />
+                  <ChatSquare size={22} />
                 </div>
                 <h3>Conexión Local Directa</h3>
                 <p>
@@ -505,6 +562,13 @@ function App() {
                 </p>
               </div>
               <div className="bento-visual-side">
+                {/* 
+                  💡 PASO PARA USAR UN SVG ANIMADO EN ESTA TARJETA (CHAT):
+                  Descomenta la siguiente línea para cargar tu SVG animado (p. ej. colocado en public/animations/chat.svg)
+                  y oculta/remueve el "mock-chat-box" de abajo.
+                  
+                  <img src="/animations/chat.svg" className="bento-svg-animation" alt="Chat Animado" style={{ width: '100%', height: 'auto', maxHeight: '180px', display: 'block', margin: '0 auto' }} />
+                */}
                 {/* Chat Simulado */}
                 <div className="mock-chat-box">
                   <div className="chat-header">
@@ -521,7 +585,7 @@ function App() {
                     </div>
                     <div className="msg outgoing">
                       <p>¡Hola! Sí, hoy tenemos cazuela de frijoles o pollo a la plancha.</p>
-                      <span className="msg-check"><CheckCircle2 size={12} /></span>
+                      <span className="msg-check"><CheckCircle size={12} /></span>
                     </div>
                     <div className="msg incoming">
                       <div className="msg-avatar-icon-wrapper">
@@ -584,7 +648,7 @@ function App() {
             >
               <div className="bento-text-side">
                 <div className="bento-icon-wrapper">
-                  <Bike size={22} />
+                  <Bicycle size={22} />
                 </div>
                 <h3>Logística Confiable</h3>
                 <p>
@@ -592,10 +656,17 @@ function App() {
                 </p>
               </div>
               <div className="bento-visual-side full-width">
+                {/* 
+                  💡 PASO PARA USAR UN SVG ANIMADO EN ESTA TARJETA (LOGÍSTICA):
+                  Descomenta la siguiente línea para cargar tu SVG animado (p. ej. colocado en public/animations/delivery.svg)
+                  y oculta/remueve el "mock-tracker" de abajo.
+                  
+                  <img src="/animations/delivery.svg" className="bento-svg-animation" alt="Logística Animada" style={{ width: '100%', height: 'auto', maxHeight: '150px', display: 'block', margin: '0 auto' }} />
+                */}
                 {/* Tracker de Delivery Simulado */}
                 <div className="mock-tracker">
                   <div className="tracker-step done">
-                    <div className="step-check"><CheckCircle2 size={12} /></div>
+                    <div className="step-check"><CheckCircle size={12} /></div>
                     <div className="step-info">
                       <span className="step-title">Pedido Preparado</span>
                       <span className="step-time">Hace 5 min</span>
@@ -699,165 +770,21 @@ function App() {
           </div>
         </section>
 
-        {/* Sección de Mapa Interactivo Simulado de Entregas (WOW Effect) */}
+        {/* Sección de Logística y Entrega Local Rápida */}
         <section className="interactive-map-section">
           <div className="map-intro-text">
-            <h2 className="section-title">Explora la Red Local de COFLY</h2>
+            <h2 className="section-title">Logística y Entrega Local Directa</h2>
             <p>
-              Elige una categoría de comercio a continuación y observa cómo nuestra red de domiciliarios traza la ruta óptima para llevar los productos de forma segura a su destino.
+              COFLY conecta a los comercios con una red de domiciliarios ágil y directa para garantizar que tus pedidos del barrio lleguen rápidos, eficientes y sin intermediarios.
             </p>
           </div>
 
-          <div className="map-interactive-container">
-            {/* Selector de categorías */}
-            <div className="map-category-selector">
-              <button 
-                className={`map-cat-btn ${mapCategory === 'pizza' ? 'active' : ''}`}
-                onClick={() => handleMapCategoryChange('pizza')}
-              >
-                <Utensils size={16} />
-                <span>Restaurantes</span>
-              </button>
-              <button 
-                className={`map-cat-btn ${mapCategory === 'groceries' ? 'active' : ''}`}
-                onClick={() => handleMapCategoryChange('groceries')}
-              >
-                <Apple size={16} />
-                <span>Fruterías</span>
-              </button>
-              <button 
-                className={`map-cat-btn ${mapCategory === 'pharmacy' ? 'active' : ''}`}
-                onClick={() => handleMapCategoryChange('pharmacy')}
-              >
-                <Pill size={16} />
-                <span>Farmacias</span>
-              </button>
-              <button 
-                className={`map-cat-btn ${mapCategory === 'shopping' ? 'active' : ''}`}
-                onClick={() => handleMapCategoryChange('shopping')}
-              >
-                <Shirt size={16} />
-                <span>Tiendas de Ropa</span>
-              </button>
-            </div>
-
-            {/* Visualización de la animación del repartidor en moto estilo vector */}
-            <div className="map-visual-box">
-              <div className="delivery-animation-container">
-                {/* Silueta de la ciudad en movimiento */}
-                <div className="delivery-bg-scroller">
-                  <div className="skyline-silhouette"></div>
-                  <div className="trees-silhouette"></div>
-                </div>
-
-                {/* Líneas de viento para simular velocidad */}
-                <div className="wind-lines-container">
-                  <div className="wind-line wind-1"></div>
-                  <div className="wind-line wind-2"></div>
-                  <div className="wind-line wind-3"></div>
-                </div>
-
-                {/* Ilustración del repartidor en moto (Bote constante en vertical) */}
-                <div className="rider-wrapper-container">
-                  <motion.div 
-                    className="rider-illustration-box"
-                    animate={{
-                      y: [0, -5, 0],
-                    }}
-                    transition={{
-                      duration: 0.6,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    <svg width="150" height="150" viewBox="0 0 150 150" fill="none" className="rider-svg-element">
-                      {/* Rueda Trasera */}
-                      <g className="wheel-back">
-                        <circle cx="35" cy="115" r="16" stroke="var(--primary)" strokeWidth="3" fill="#121522" />
-                        <circle cx="35" cy="115" r="8" stroke="var(--outline-variant)" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <line x1="35" y1="99" x2="35" y2="131" stroke="var(--outline-variant)" strokeWidth="1.5" />
-                        <line x1="19" y1="115" x2="51" y2="115" stroke="var(--outline-variant)" strokeWidth="1.5" />
-                      </g>
-                      
-                      {/* Rueda Delantera */}
-                      <g className="wheel-front">
-                        <circle cx="115" cy="115" r="16" stroke="var(--primary)" strokeWidth="3" fill="#121522" />
-                        <circle cx="115" cy="115" r="8" stroke="var(--outline-variant)" strokeWidth="1.5" strokeDasharray="3 3" />
-                        <line x1="115" y1="99" x2="115" y2="131" stroke="var(--outline-variant)" strokeWidth="1.5" />
-                        <line x1="99" y1="115" x2="131" y2="115" stroke="var(--outline-variant)" strokeWidth="1.5" />
-                      </g>
-
-                      {/* Chasis de la Moto */}
-                      <path d="M 35 115 L 60 115 L 75 120 L 98 120 L 108 90 L 115 115" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M 98 120 L 108 82 L 100 80" stroke="var(--secondary)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                      
-                      {/* Motor / Batería */}
-                      <rect x="42" y="98" width="18" height="15" rx="3" fill="var(--primary)" stroke="var(--secondary)" strokeWidth="1.5" />
-                      
-                      {/* Caja de Reparto COFLY */}
-                      <rect x="18" y="62" width="30" height="32" rx="4" fill="var(--secondary)" stroke="var(--on-primary)" strokeWidth="1.5" />
-                      <path d="M 18 78 L 48 78" stroke="var(--on-primary)" strokeWidth="2" />
-                      <circle cx="33" cy="70" r="3" fill="var(--on-primary)" />
-
-                      {/* Repartidor (Esqueleto geométrico limpio) */}
-                      <path d="M 52 86 L 76 96 L 82 118" stroke="var(--primary)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M 52 86 L 68 62" stroke="var(--secondary)" strokeWidth="6" strokeLinecap="round" />
-                      <path d="M 68 62 L 92 68 L 105 81" stroke="var(--secondary)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <line x1="68" y1="62" x2="72" y2="54" stroke="var(--outline-variant)" strokeWidth="2.5" />
-                      <circle cx="75" cy="48" r="8.5" fill="var(--primary)" />
-                      <path d="M 75 42 Q 85 45 83 52" stroke="var(--secondary)" strokeWidth="2" fill="none" strokeLinecap="round" />
-                    </svg>
-                    
-                    {/* Burbuja flotante con el pedido */}
-                    <AnimatePresence mode="wait">
-                      <motion.div 
-                        key={mapCategory}
-                        className="rider-order-bubble"
-                        style={{ border: `2px solid ${mapData[mapCategory].color}` }}
-                        initial={{ scale: 0, opacity: 0, y: 15 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        exit={{ scale: 0, opacity: 0, y: -15 }}
-                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
-                      >
-                        <div className="rider-bubble-icon" style={{ backgroundColor: mapData[mapCategory].color }}>
-                          {mapData[mapCategory].icon}
-                        </div>
-                        <span className="rider-bubble-text">{mapData[mapCategory].productName}</span>
-                      </motion.div>
-                    </AnimatePresence>
-                  </motion.div>
-                </div>
-
-                {/* Carretera y líneas del asfalto en movimiento */}
-                <div className="road-container">
-                  <div className="road-surface"></div>
-                  <div className="road-dashes-wrapper">
-                    <div className="road-dash"></div>
-                    <div className="road-dash"></div>
-                    <div className="road-dash"></div>
-                    <div className="road-dash"></div>
-                    <div className="road-dash"></div>
-                    <div className="road-dash"></div>
-                  </div>
-                </div>
-
-                {/* Notificación flotante de entrega */}
-                <div className="map-delivery-notification">
-                  <div className="notif-bar" style={{ backgroundColor: mapData[mapCategory].color }}></div>
-                  <div className="notif-body">
-                    <span className="notif-title">Entrega COFLY en curso</span>
-                    <span className="notif-desc">
-                      {isDelivering ? (
-                        <>Llevando <strong>{mapData[mapCategory].productName}</strong> desde <strong>{mapData[mapCategory].shopName}</strong> ({mapData[mapCategory].delay})</>
-                      ) : (
-                        <>¡Pedido entregado con éxito por el comercio! ✅</>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
+          <div className="map-interactive-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '32px', minHeight: '380px' }}>
+            <img 
+              src="/animations/Animation%20Delivery%20on%20a%20Bike.svg" 
+              alt="COFLY Delivery Animación" 
+              style={{ width: '100%', maxWidth: '580px', height: 'auto', display: 'block', margin: '0 auto' }}
+            />
           </div>
         </section>
 
@@ -872,7 +799,7 @@ function App() {
               
               <div className="benefits-list">
                 <div className="benefit-item">
-                  <KeyRound size={20} className="benefit-item-icon" />
+                  <Key size={20} className="benefit-item-icon" />
                   <div>
                     <h4>Acceso Prioritario y Exclusivo</h4>
                     <p>Conecta de forma prioritaria con los clientes y comercios de tu zona antes del lanzamiento general.</p>
@@ -906,7 +833,7 @@ function App() {
                 <div className="static-icons-row">
                   <Store size={32} />
                   <ArrowRight size={20} />
-                  <Bike size={32} />
+                  <Bicycle size={32} />
                 </div>
               </div>
             </div>
@@ -1038,6 +965,7 @@ function App() {
         </footer>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
 

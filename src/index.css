@@ -2263,3 +2263,78 @@ button {
   border-radius: var(--rounded-default);
 }
 
+/* Pantalla de Error 404 */
+.not-found-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  position: relative;
+  overflow: hidden;
+  background-color: #06070b;
+}
+
+.not-found-content {
+  max-width: 580px;
+  width: 100%;
+  text-align: center;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--surface-container-low);
+  border: 1px solid var(--surface-container-high);
+  border-radius: var(--rounded-xl);
+  padding: 48px 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.not-found-image-wrapper {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 24px;
+}
+
+.not-found-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.not-found-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-bottom: 12px;
+}
+
+.not-found-description {
+  font-size: 16px;
+  color: var(--on-surface-variant);
+  margin-bottom: 32px;
+  line-height: 24px;
+  max-width: 480px;
+}
+
+.not-found-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(239, 95, 24, 0.3);
+}
+
+.not-found-btn:hover {
+  background-color: #f7702d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 95, 24, 0.45);
+}
+
