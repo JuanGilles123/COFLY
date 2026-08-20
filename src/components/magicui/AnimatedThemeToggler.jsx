@@ -8,8 +8,7 @@ export function AnimatedThemeToggler({ theme, toggleTheme, className }) {
   const buttonRef = useRef(null);
 
   const handleToggle = () => {
-    const isMobile = window.innerWidth < 768;
-    if (!document.startViewTransition || isMobile) {
+    if (!document.startViewTransition) {
       toggleTheme();
       return;
     }
@@ -22,26 +21,15 @@ export function AnimatedThemeToggler({ theme, toggleTheme, className }) {
       Math.max(y, window.innerHeight - y)
     );
 
-    const transition = document.startViewTransition(() => {
+    // Pass toggle coordinates to CSS variables on documentElement
+    document.documentElement.style.setProperty("--x", `${x}px`);
+    document.documentElement.style.setProperty("--y", `${y}px`);
+    document.documentElement.style.setProperty("--r", `${endRadius}px`);
+
+    document.startViewTransition(() => {
       flushSync(() => {
         toggleTheme();
       });
-    });
-
-    transition.ready.then(() => {
-      document.documentElement.animate(
-        {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${endRadius}px at ${x}px ${y}px)`,
-          ],
-        },
-        {
-          duration: 450,
-          easing: "ease-in-out",
-          pseudoElement: "::view-transition-new(root)",
-        }
-      );
     });
   };
 
@@ -70,3 +58,5 @@ export function AnimatedThemeToggler({ theme, toggleTheme, className }) {
     </button>
   );
 }
+
+AnimatedThemeToggler.displayName = "AnimatedThemeToggler";

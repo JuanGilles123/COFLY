@@ -2483,17 +2483,24 @@ button {
 }
 
 /* Configuración de View Transitions para el cambio de tema */
-::view-transition-old(root),
-::view-transition-new(root) {
+::view-transition-old(root) {
   animation: none;
   mix-blend-mode: normal;
-}
-
-::view-transition-old(root) {
   z-index: 1;
 }
 
 ::view-transition-new(root) {
+  animation: 450ms cubic-bezier(0.4, 0, 0.2, 1) clip-reveal;
+  mix-blend-mode: normal;
   z-index: 99999;
+}
+
+@keyframes clip-reveal {
+  from {
+    clip-path: circle(0px at var(--x) var(--y));
+  }
+  to {
+    clip-path: circle(var(--r) at var(--x) var(--y));
+  }
 }
 
