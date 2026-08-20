@@ -8,7 +8,8 @@ export function AnimatedThemeToggler({ theme, toggleTheme, className }) {
   const buttonRef = useRef(null);
 
   const handleToggle = () => {
-    if (!document.startViewTransition) {
+    const isMobile = window.innerWidth < 768;
+    if (!document.startViewTransition || isMobile) {
       toggleTheme();
       return;
     }
