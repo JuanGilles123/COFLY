@@ -1,5 +1,55 @@
-/* Hoja de estilos global de COFLY - AeroMetric Design System (Light Theme) */
+@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&display=swap');
+
+@theme {
+  --animate-marquee: marquee var(--duration, 40s) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration, 40s) linear infinite;
+  --animate-ripple: ripple var(--duration, 2s) ease calc(var(--i, 0)*0.2s) infinite;
+  --animate-border-beam: border-beam var(--duration, 15s) linear infinite;
+  --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% - var(--gap))); }
+  }
+  @keyframes marquee-vertical {
+    from { transform: translateY(0); }
+    to { transform: translateY(calc(-100% - var(--gap))); }
+  }
+  @keyframes ripple {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(0.9); }
+  }
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+  @keyframes shimmer-slide {
+    to {
+      transform: translate(calc(100cqw - 100%), 0);
+    }
+  }
+  @keyframes spin-around {
+    0% {
+      transform: translateZ(0) rotate(0);
+    }
+    15%, 35% {
+      transform: translateZ(0) rotate(90deg);
+    }
+    65%, 85% {
+      transform: translateZ(0) rotate(270deg);
+    }
+    100% {
+      transform: translateZ(0) rotate(360deg);
+    }
+  }
+}
+
+html {
+  scrollbar-gutter: stable;
+}
 
 :root {
   /* Colors */
@@ -59,6 +109,44 @@
   /* Transitions */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Variables de Tema Oscuro */
+:root[data-theme="dark"] {
+  --surface: #0a0b10;
+  --surface-dim: #111219;
+  --surface-bright: #1c1e28;
+  --surface-container-lowest: #050608;
+  --surface-container-low: #0f1119;
+  --surface-container: #151722;
+  --surface-container-high: #1c1f2e;
+  --surface-container-highest: #23273a;
+  
+  --on-surface: #f0f1f2;
+  --on-surface-variant: #b0afb8;
+  
+  --inverse-surface: #f8f9fa;
+  --inverse-on-surface: #191c1d;
+  
+  --outline: #8e8c97;
+  --outline-variant: #2d3142;
+  --surface-tint: #b5afff;
+  
+  /* Primary & Brand Colors (dark adjustment) */
+  --primary: #EF5F18; /* Keep vibrant orange! */
+  --primary-hover: #ff7d3b;
+  --on-primary: #ffffff;
+  
+  --navy: #e5e7eb; /* Neutral light grey for contrast without purple hue */
+  --navy-hover: #ffffff;
+  --on-navy: #0f1119;
+  
+  --taupe: #b38b77; /* Warm Taupe adjusted for dark theme contrast */
+  --taupe-light: rgba(179, 139, 119, 0.15);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  --shadow-level-2: 0px 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Reset de Estilos */
@@ -126,7 +214,38 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--surface-container-highest);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--rounded-full);
+  border: 1px solid var(--outline-variant);
+  background-color: var(--surface-container-low);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle-btn:hover {
+  background-color: var(--surface-container-high);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.05);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
 }
 
 .logo-container {
@@ -139,13 +258,17 @@ html, body {
   height: 38px;
   object-fit: contain;
   display: block;
+  background-color: white;
+  border-radius: 6px;
+  padding: 3px 6px;
+  box-shadow: var(--shadow-sm);
 }
 
 .badge-beta {
   font-size: 12px; /* label-sm */
   font-weight: 600;
   background: var(--navy);
-  color: var(--on-primary);
+  color: var(--on-navy);
   padding: 4px 10px;
   border-radius: var(--rounded-full);
   text-transform: uppercase;
@@ -710,7 +833,7 @@ html, body {
   gap: 10px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--navy);
+  color: #251a65; /* Keep it deep navy so it's always readable on the white floating background */
   box-shadow: 0 10px 25px rgba(37, 26, 101, 0.08);
   z-index: 8;
   pointer-events: none;
@@ -1011,7 +1134,7 @@ html, body {
   width: 32px;
   height: 32px;
   background-color: var(--navy);
-  color: white;
+  color: var(--on-navy);
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -1172,6 +1295,7 @@ html, body {
 
 .cta-bottom-inputs {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   width: 100%;
 }
@@ -1199,7 +1323,6 @@ html, body {
 }
 
 .secondary-cta-btn {
-  background-color: var(--primary);
   color: white;
   width: 100%;
 }
@@ -1290,6 +1413,27 @@ html, body {
   filter: blur(80px);
   pointer-events: none;
   animation: bgGlowFloat 20s infinite ease-in-out alternate;
+}
+
+/* Sobreescritura de fondos en tema oscuro */
+:root[data-theme="dark"] .grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(239, 95, 24, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(239, 95, 24, 0.03) 1px, transparent 1px);
+}
+
+:root[data-theme="dark"] .glow-bg {
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(239, 95, 24, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(181, 175, 255, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(179, 139, 119, 0.03) 0%, transparent 35%);
+}
+
+
+
+:root[data-theme="dark"] .cta-bottom-card {
+  background: linear-gradient(135deg, #1d154c 0%, #0d0926 100%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes bgGlowFloat {
@@ -1414,7 +1558,7 @@ html, body {
 
 .chat-header {
   background: var(--navy);
-  color: white;
+  color: var(--on-navy);
   padding: 8px 12px;
   font-size: 11px;
   font-weight: 600;
@@ -1468,7 +1612,7 @@ html, body {
 
 .msg.incoming p {
   background: white;
-  color: var(--on-surface);
+  color: #111111; /* Keep text dark on white background */
   border-bottom-left-radius: 2px;
 }
 
@@ -1735,7 +1879,7 @@ html, body {
 
 .map-cat-btn.active {
   background: var(--navy);
-  color: white;
+  color: var(--on-navy);
   border-color: var(--navy);
   box-shadow: var(--shadow-sm);
 }
@@ -2336,5 +2480,20 @@ button {
   background-color: #f7702d;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(239, 95, 24, 0.45);
+}
+
+/* Configuración de View Transitions para el cambio de tema */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 99999;
 }
 

@@ -21,6 +21,15 @@ import {
 import { registerEmail } from './lib/database';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
+// Importaciones de Magic UI
+import { Ripple } from './components/magicui/Ripple';
+import { BorderBeam } from './components/magicui/BorderBeam';
+import { DotPattern } from './components/magicui/DotPattern';
+import { ShimmerButton } from './components/magicui/ShimmerButton';
+import { ScrollProgress } from './components/magicui/ScrollProgress';
+import { AnimatedThemeToggler } from './components/magicui/AnimatedThemeToggler';
+import { MorphingText } from './components/magicui/MorphingText';
+
 // Componente de Contador Animado
 function AnimatedCounter({ value, suffix = "", duration = 2 }) {
   const [count, setCount] = useState(0);
@@ -137,6 +146,26 @@ class ErrorBoundary extends React.Component {
 function App() {
   // Estado para manejar la ruta actual (Error 404)
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+
+  // Estado para manejar el tema (Modo Claro / Oscuro)
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) return savedTheme;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    setTheme(nextTheme);
+  };
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -342,10 +371,12 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="app-container">
+      <div className="app-container relative">
+      <ScrollProgress />
       {/* Fondos dinámicos en capas */}
       <div className="grid-bg"></div>
       <div className="glow-bg"></div>
+      <DotPattern className="opacity-15 dark:opacity-25" />
 
       <div className="content-wrapper">
         {/* Encabezado */}
@@ -353,13 +384,21 @@ function App() {
           <div className="logo-container">
             <img src="/Logo Cofly.png" alt="COFLY Logo" className="logo-img" />
           </div>
-          <span className="badge-beta">Beta Cerrada</span>
+          <div className="header-actions">
+            <AnimatedThemeToggler theme={theme} toggleTheme={toggleTheme} />
+            <span className="badge-beta">Beta Cerrada</span>
+          </div>
         </header>
 
         {/* Sección Héroe con estructura de Doble Columna */}
         <section className="hero" ref={containerRef}>
           <div className="hero-grid">
             <div className="hero-text-content">
+              <MorphingText 
+                texts={["CONEXIÓN LOCAL", "DOMICILIOS RÁPIDOS", "SOCIOS DE CONFIANZA", "RED COMUNITARIA"]} 
+                className="text-primary text-[10pt] md:text-[11pt] lg:text-[12pt] font-extrabold tracking-widest uppercase h-6 text-center mx-auto md:text-left md:mx-0 mb-2.5"
+              />
+
               <h1 className="hero-title">
                 La plataforma que conecta tu <span>negocio local</span> con clientes
               </h1>
@@ -415,20 +454,17 @@ function App() {
                       disabled={status === 'loading'}
                     />
                   </div>
-                  <button 
+                  <ShimmerButton 
                     type="submit" 
-                    className="btn-submit"
                     disabled={status === 'loading'}
+                    className="w-full mt-4"
+                    shimmerColor="#ffffff"
+                    background="#EF5F18"
                   >
-                    {status === 'loading' ? (
-                      <span className="spinner"></span>
-                    ) : (
-                      <>
-                        <span>Pre-registrarse</span>
-                        <ArrowRight size={18} />
-                      </>
-                    )}
-                  </button>
+                    <span className="font-semibold text-white">
+                      {status === 'loading' ? 'Cargando...' : 'Pre-registrarse'}
+                    </span>
+                  </ShimmerButton>
                 </form>
 
                 {/* Mensajes de Estado */}
@@ -500,16 +536,15 @@ function App() {
                       
                       <div className="phone-screen-content">
                         {/* Simulación de Mapa Local */}
-                        <div className="phone-mock-map">
-                          <div className="map-circle ripple-1"></div>
-                          <div className="map-circle ripple-2"></div>
-                          <div className="map-pin-indicator index-1">
+                        <div className="phone-mock-map relative overflow-hidden flex items-center justify-center">
+                          <Ripple mainCircleSize={60} mainCircleOpacity={0.25} numCircles={4} className="opacity-75" />
+                          <div className="map-pin-indicator index-1 z-10">
                             <MapPoint size={14} />
                           </div>
-                          <div className="map-pin-indicator index-2">
+                          <div className="map-pin-indicator index-2 z-10">
                             <Store size={14} />
                           </div>
-                          <div className="map-pin-indicator index-3">
+                          <div className="map-pin-indicator index-3 z-10">
                             <ShoppingBag size={14} />
                           </div>
                         </div>
@@ -548,7 +583,7 @@ function App() {
             
             {/* Tarjeta 1: Conexión Directa (8/12) con Chat Simulado */}
             <div 
-              className="bento-card col-span-8 interactive-card-3d" 
+              className="bento-card col-span-8 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
             >
@@ -562,13 +597,6 @@ function App() {
                 </p>
               </div>
               <div className="bento-visual-side">
-                {/* 
-                  💡 PASO PARA USAR UN SVG ANIMADO EN ESTA TARJETA (CHAT):
-                  Descomenta la siguiente línea para cargar tu SVG animado (p. ej. colocado en public/animations/chat.svg)
-                  y oculta/remueve el "mock-chat-box" de abajo.
-                  
-                  <img src="/animations/chat.svg" className="bento-svg-animation" alt="Chat Animado" style={{ width: '100%', height: 'auto', maxHeight: '180px', display: 'block', margin: '0 auto' }} />
-                */}
                 {/* Chat Simulado */}
                 <div className="mock-chat-box">
                   <div className="chat-header">
@@ -596,11 +624,12 @@ function App() {
                   </div>
                 </div>
               </div>
+              <BorderBeam size={250} duration={8} delay={2} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
 
             {/* Tarjeta 2: Publicidad y Posicionamiento (4/12) con Ranking */}
             <div 
-              className="bento-card col-span-4 interactive-card-3d" 
+              className="bento-card col-span-4 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
             >
@@ -638,11 +667,12 @@ function App() {
                   </div>
                 </div>
               </div>
+              <BorderBeam size={200} duration={8} delay={1} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
 
             {/* Tarjeta 3: Logística Sencilla (4/12) con Delivery Tracker */}
             <div 
-              className="bento-card col-span-4 interactive-card-3d" 
+              className="bento-card col-span-4 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
             >
@@ -656,13 +686,6 @@ function App() {
                 </p>
               </div>
               <div className="bento-visual-side full-width">
-                {/* 
-                  💡 PASO PARA USAR UN SVG ANIMADO EN ESTA TARJETA (LOGÍSTICA):
-                  Descomenta la siguiente línea para cargar tu SVG animado (p. ej. colocado en public/animations/delivery.svg)
-                  y oculta/remueve el "mock-tracker" de abajo.
-                  
-                  <img src="/animations/delivery.svg" className="bento-svg-animation" alt="Logística Animada" style={{ width: '100%', height: 'auto', maxHeight: '150px', display: 'block', margin: '0 auto' }} />
-                */}
                 {/* Tracker de Delivery Simulado */}
                 <div className="mock-tracker">
                   <div className="tracker-step done">
@@ -687,11 +710,12 @@ function App() {
                   </div>
                 </div>
               </div>
+              <BorderBeam size={200} duration={8} delay={3} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
 
             {/* Tarjeta 4: Contadores Estadísticos Animados (8/12) */}
             <div 
-              className="bento-card col-span-8 interactive-card-3d" 
+              className="bento-card col-span-8 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
             >
@@ -726,10 +750,13 @@ function App() {
                   </div>
                 </div>
               </div>
+              <BorderBeam size={250} duration={8} delay={0} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
 
           </div>
         </section>
+
+
 
         {/* Sección de Cómo Funciona */}
         <section className="how-it-works-section">
@@ -923,20 +950,17 @@ function App() {
                   disabled={status2 === 'loading'}
                 />
               </div>
-              <button 
+              <ShimmerButton 
                 type="submit" 
-                className="btn-submit secondary-cta-btn"
                 disabled={status2 === 'loading'}
+                className="secondary-cta-btn w-full mt-4"
+                shimmerColor="#ffffff"
+                background="#EF5F18"
               >
-                {status2 === 'loading' ? (
-                  <span className="spinner"></span>
-                ) : (
-                  <>
-                    <span>Pre-registrarse gratis</span>
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
+                <span className="font-semibold text-white">
+                  {status2 === 'loading' ? 'Cargando...' : 'Pre-registrarse gratis'}
+                </span>
+              </ShimmerButton>
             </form>
 
             {/* Mensajes de Estado Form 2 */}
