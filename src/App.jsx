@@ -19,7 +19,8 @@ import {
   User
 } from 'reicon-react';
 import { registerEmail } from './lib/database';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { Marquee } from './components/magicui/Marquee';
 
 // Importaciones de Magic UI
 import { Ripple } from './components/magicui/Ripple';
@@ -218,6 +219,63 @@ function App() {
     offset: ["start start", "end start"]
   });
 
+  // Svelte-style mouse spring tracking for floating elements
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Configure springs with elastic stiffness and damping
+  const springConfig = { stiffness: 60, damping: 20 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+
+  const handleHeroMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleHeroMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const particle1X = useTransform(springX, (val) => val * 0.08);
+  const particle1Y = useTransform(springY, (val) => val * 0.08);
+  const particle2X = useTransform(springX, (val) => val * -0.05);
+  const particle2Y = useTransform(springY, (val) => val * -0.05);
+  const particle3X = useTransform(springX, (val) => val * 0.12);
+  const particle3Y = useTransform(springY, (val) => val * 0.12);
+  const particle4X = useTransform(springX, (val) => val * -0.08);
+  const particle4Y = useTransform(springY, (val) => val * -0.08);
+
+  // Bento grid scroll animations variants (Svelte staggered fly style)
+  const bentoContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.12,
+        delayChildren: 0.05
+      }
+    }
+  };
+
+  const bentoItemVariants = {
+    hidden: { y: 40, scale: 0.96, opacity: 0 },
+    show: { 
+      y: 0, 
+      scale: 1, 
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 90,
+        damping: 18
+      }
+    }
+  };
+
   // Animaciones 3D e inclinaciones suaves para el celular en scroll
   const rotateX = useTransform(scrollYProgress, [0, 0.8], [24, 0]);
   const rotateY = useTransform(scrollYProgress, [0, 0.8], [-28, 0]);
@@ -391,8 +449,53 @@ function App() {
         </header>
 
         {/* Sección Héroe con estructura de Doble Columna */}
-        <section className="hero" ref={containerRef}>
-          <div className="hero-grid">
+        <section 
+          className="hero relative overflow-hidden" 
+          ref={containerRef}
+          onMouseMove={handleHeroMouseMove}
+          onMouseLeave={handleHeroMouseLeave}
+        >
+          {/* Partículas elásticas estilo Svelte (Framer Motion springs) */}
+          <div className="hero-particles-overlay pointer-events-none absolute inset-0 z-0">
+            <motion.div 
+              className="hero-particle particle-bike absolute" 
+              style={{ x: particle1X, y: particle1Y }}
+            >
+              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
+                <Bicycle size={16} className="text-[#EF5F18]" />
+                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Domicilio</span>
+              </div>
+            </motion.div>
+            <motion.div 
+              className="hero-particle particle-map absolute" 
+              style={{ x: particle2X, y: particle2Y }}
+            >
+              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
+                <MapPoint size={16} className="text-[#EF5F18]" />
+                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Barrio</span>
+              </div>
+            </motion.div>
+            <motion.div 
+              className="hero-particle particle-store absolute" 
+              style={{ x: particle3X, y: particle3Y }}
+            >
+              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
+                <Store size={16} className="text-[#EF5F18]" />
+                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Comercio</span>
+              </div>
+            </motion.div>
+            <motion.div 
+              className="hero-particle particle-bag absolute" 
+              style={{ x: particle4X, y: particle4Y }}
+            >
+              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
+                <ShoppingBag size={16} className="text-[#EF5F18]" />
+                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Pedido</span>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="hero-grid relative z-10">
             <div className="hero-text-content">
               <MorphingText 
                 texts={["CONEXIÓN LOCAL", "DOMICILIOS RÁPIDOS", "SOCIOS DE CONFIANZA", "RED COMUNITARIA"]} 
@@ -576,13 +679,69 @@ function App() {
           </div>
         </section>
 
+        {/* Sección de Comercios Aliados (Carrusel) */}
+        <section className="partners-section">
+          <div className="partners-container">
+            <p className="partners-title">Comercios que ya confían en COFLY</p>
+            <Marquee className="partners-marquee" pauseOnHover={true} repeat={4}>
+              {/* Tarjeta de Luna Lunera (Socio Fundador) */}
+              <a 
+                href="https://www.instagram.com/luna_lunera_store/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="partner-card active-partner mx-4 block"
+              >
+                <div className="partner-card-glow"></div>
+                <div className="partner-logo-wrapper">
+                  <img 
+                    src="/Logolunalunera.svg" 
+                    alt="Luna Lunera" 
+                    className="partner-logo-img"
+                  />
+                </div>
+                <div className="partner-badge">Socio Fundador</div>
+              </a>
+
+              {/* Tarjeta de Dulcinoa (Socio Fundador) */}
+              <a 
+                href="https://www.instagram.com/dulcinoa.co/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="partner-card active-partner mx-4 block"
+              >
+                <div className="partner-card-glow"></div>
+                <div className="partner-logo-wrapper">
+                  <img 
+                    src={theme === 'dark' ? '/dulcinoawrithe.svg' : '/dulcinoablack.svg'} 
+                    alt="Dulcinoa" 
+                    className="partner-logo-img-custom"
+                  />
+                </div>
+                <div className="partner-badge">Socio Fundador</div>
+              </a>
+
+            </Marquee>
+          </div>
+        </section>
+
+
+
+
+
         {/* Sección de Características Bento Grid */}
         <section className="features-section">
           <h2 className="section-title">¿Qué hace a COFLY único?</h2>
-          <div className="bento-grid">
+          <motion.div 
+            className="bento-grid"
+            variants={bentoContainerVariants}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+          >
             
             {/* Tarjeta 1: Conexión Directa (8/12) con Chat Simulado */}
-            <div 
+            <motion.div 
+              variants={bentoItemVariants}
               className="bento-card col-span-8 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
@@ -625,10 +784,11 @@ function App() {
                 </div>
               </div>
               <BorderBeam size={250} duration={8} delay={2} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            </motion.div>
 
             {/* Tarjeta 2: Publicidad y Posicionamiento (4/12) con Ranking */}
-            <div 
+            <motion.div 
+              variants={bentoItemVariants}
               className="bento-card col-span-4 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
@@ -668,10 +828,11 @@ function App() {
                 </div>
               </div>
               <BorderBeam size={200} duration={8} delay={1} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            </motion.div>
 
             {/* Tarjeta 3: Logística Sencilla (4/12) con Delivery Tracker */}
-            <div 
+            <motion.div 
+              variants={bentoItemVariants}
               className="bento-card col-span-4 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
@@ -711,10 +872,11 @@ function App() {
                 </div>
               </div>
               <BorderBeam size={200} duration={8} delay={3} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            </motion.div>
 
             {/* Tarjeta 4: Contadores Estadísticos Animados (8/12) */}
-            <div 
+            <motion.div 
+              variants={bentoItemVariants}
               className="bento-card col-span-8 interactive-card-3d group" 
               onMouseMove={handleMouseMove} 
               onMouseLeave={handleMouseLeave}
@@ -751,9 +913,9 @@ function App() {
                 </div>
               </div>
               <BorderBeam size={250} duration={8} delay={0} className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
         </section>
 
 
