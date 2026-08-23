@@ -1,28 +1,14 @@
-// Servicio de base de datos para la Landing Page de COFLY
-import { createClient } from '@supabase/supabase-js';
+// Servicio de base de datos para la Landing Page de COFLY utilizando Neon (vía Netlify Functions)
 
-// Intentar leer las variables de entorno de Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Determinar si debemos conectar con la base de datos real o usar localStorage.
+// En producción (Netlify) siempre usamos la base de datos.
+// En desarrollo local usamos localStorage a menos que se fuerce la conexión con la DB.
+const useDatabase = import.meta.env.PROD || import.meta.env.VITE_CONNECT_TO_DB === 'true';
 
-// Comprobar si las credenciales son válidas y no son los placeholders de .env.example
-const isSupabaseConfigured = 
-  supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl !== 'tu_supabase_project_url' && 
-  supabaseAnonKey !== 'tu_supabase_anon_key';
-
-let supabase = null;
-
-if (isSupabaseConfigured) {
-  try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('🔌 Conectado a Supabase correctamente.');
-  } catch (error) {
-    console.error('❌ Error al inicializar el cliente de Supabase:', error);
-  }
+if (useDatabase) {
+  console.log('🔌 Base de datos (Neon a través de Netlify Functions) configurada para registros.');
 } else {
-  console.log('💾 Supabase no configurado o usando valores de ejemplo. Usando LocalStorage para guardar pre-registros.');
+  console.log('💾 Usando LocalStorage para guardar pre-registros (Modo de Desarrollo).');
 }
 
 /**
@@ -81,34 +67,34 @@ export async function registerEmail(email, name = '', phone = '') {
   // Obtener geolocalización (no bloquea al usuario si hay un fallo de red o adblocker)
   const location = await getUserLocation();
 
-  if (isSupabaseConfigured && supabase) {
+  if (useDatabase) {
     try {
-      // Construir el objeto de inserción omitiendo campos nulos
-      // Esto permite que el Trigger de Postgres autocomplete la IP y el País si el cliente no pudo obtenerlos
-      const insertData = { email: cleanEmail };
-      if (cleanName) insertData.name = cleanName;
-      if (cleanPhone) insertData.phone = cleanPhone;
-      if (location.ip) insertData.ip = location.ip;
-      if (location.city) insertData.city = location.city;
-      if (location.region) insertData.region = location.region;
-      if (location.country) insertData.country = location.country;
-      if (location.user_agent) insertData.user_agent = location.user_agent;
+      const response = await fetch('/.netlify/functions/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: cleanEmail,
+          name: cleanName,
+          phone: cleanPhone,
+          ip: location.ip,
+          city: location.city,
+          region: location.region,
+          country: location.country,
+          user_agent: location.user_agent
+        }),
+      });
 
-      const { error } = await supabase
-        .from('pre_registrations')
-        .insert([insertData]);
+      const data = await response.json();
 
-      if (error) {
-        // Manejar el caso de correo duplicado
-        if (error.code === '23505') {
-          return { success: false, error: 'Este correo electrónico ya está registrado.' };
-        }
-        return { success: false, error: error.message || 'Ocurrió un error al registrar el correo.' };
+      if (!response.ok) {
+        return { success: false, error: data.error || 'Ocurrió un error al registrar el correo.' };
       }
-      
+
       return { success: true, local: false };
     } catch (err) {
-      console.error('Error en Supabase insert:', err);
+      console.error('Error al conectar con la función de Netlify:', err);
       return { success: false, error: 'Error de red al conectar con el servidor.' };
     }
   } else {
@@ -201,9 +187,9 @@ export function exportLocalRegistrationsAsCSV() {
 }
 
 /**
- * Verifica si Supabase está configurado actualmente
+ * Verifica si se está utilizando la base de datos activa actualmente
  * @returns {boolean}
  */
-export function isUsingSupabase() {
-  return isSupabaseConfigured;
+export function isUsingDatabase() {
+  return useDatabase;
 }
