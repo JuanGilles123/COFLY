@@ -1,5 +1,6 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
 
 @theme {
   --animate-marquee: marquee var(--duration, 40s) linear infinite;
