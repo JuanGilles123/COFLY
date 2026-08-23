@@ -31,6 +31,7 @@ import { ShimmerButton } from './components/magicui/ShimmerButton';
 import { ScrollProgress } from './components/magicui/ScrollProgress';
 import { AnimatedThemeToggler } from './components/magicui/AnimatedThemeToggler';
 import { MorphingText } from './components/magicui/MorphingText';
+import { LightRays } from './components/magicui/LightRays';
 
 // Componente de Contador Animado
 function AnimatedCounter({ value, suffix = "", duration = 2 }) {
@@ -377,8 +378,25 @@ function App() {
   };
 
   // Animaciones 3D e inclinaciones suaves para el celular en scroll
-  const rotateX = useTransform(scrollYProgress, [0, 0.8], [24, 0]);
-  const rotateY = useTransform(scrollYProgress, [0, 0.8], [-28, 0]);
+  // Combinar rotación por Scroll y rotación interactiva por Mouse (tilting 3D real)
+  const rotateX = useTransform(
+    [scrollYProgress, springY],
+    ([scrollVal, mouseVal]) => {
+      const scrollRotation = (1 - scrollVal) * 24; // 24deg a 0deg en scroll
+      const mouseRotation = (mouseVal / 350) * -12; // Inclinación max 12deg por mouse Y
+      return scrollRotation + mouseRotation;
+    }
+  );
+
+  const rotateY = useTransform(
+    [scrollYProgress, springX],
+    ([scrollVal, mouseVal]) => {
+      const scrollRotation = (1 - scrollVal) * -28; // -28deg a 0deg en scroll
+      const mouseRotation = (mouseVal / 600) * 15;  // Inclinación max 15deg por mouse X
+      return scrollRotation + mouseRotation;
+    }
+  );
+
   const rotateZ = useTransform(scrollYProgress, [0, 0.8], [-5, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.8], [0.92, 1.06]);
   const phoneY = useTransform(scrollYProgress, [0, 0.8], [0, 60]);
@@ -535,6 +553,11 @@ function App() {
       <div className="grid-bg"></div>
       <div className="glow-bg"></div>
       <DotPattern className="opacity-15 dark:opacity-25" />
+      <LightRays 
+        color={theme === 'dark' ? 'rgba(239, 95, 24, 0.18)' : 'rgba(37, 26, 101, 0.18)'} 
+        count={8}
+        className="opacity-100" 
+      />
 
       <div className="content-wrapper">
         {/* Encabezado */}
@@ -550,7 +573,7 @@ function App() {
 
         {/* Sección Héroe con estructura de Doble Columna */}
         <section 
-          className="hero relative overflow-hidden" 
+          className="hero relative overflow-visible" 
           ref={containerRef}
           onMouseMove={handleHeroMouseMove}
           onMouseLeave={handleHeroMouseLeave}
@@ -561,36 +584,36 @@ function App() {
               className="hero-particle particle-bike absolute" 
               style={{ x: particle1X, y: particle1Y }}
             >
-              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
-                <Bicycle size={16} className="text-[#EF5F18]" />
-                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Domicilio</span>
+              <div className="particle-wrapper">
+                <Bicycle size={15} className="text-[#EF5F18]" />
+                <span>Domicilio</span>
               </div>
             </motion.div>
             <motion.div 
               className="hero-particle particle-map absolute" 
               style={{ x: particle2X, y: particle2Y }}
             >
-              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
-                <MapPoint size={16} className="text-[#EF5F18]" />
-                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Barrio</span>
+              <div className="particle-wrapper">
+                <MapPoint size={15} className="text-[#EF5F18]" />
+                <span>Barrio</span>
               </div>
             </motion.div>
             <motion.div 
               className="hero-particle particle-store absolute" 
               style={{ x: particle3X, y: particle3Y }}
             >
-              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
-                <Store size={16} className="text-[#EF5F18]" />
-                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Comercio</span>
+              <div className="particle-wrapper">
+                <Store size={15} className="text-[#EF5F18]" />
+                <span>Comercio</span>
               </div>
             </motion.div>
             <motion.div 
               className="hero-particle particle-bag absolute" 
               style={{ x: particle4X, y: particle4Y }}
             >
-              <div className="particle-wrapper flex items-center gap-2 px-3 py-1.5 rounded-full border border-[rgba(239,95,24,0.15)] bg-[rgba(255,255,255,0.03)] backdrop-blur-md shadow-lg">
-                <ShoppingBag size={16} className="text-[#EF5F18]" />
-                <span className="text-[11px] font-medium text-[rgba(255,255,255,0.7)] dark:text-[rgba(255,255,255,0.8)]">Pedido</span>
+              <div className="particle-wrapper">
+                <ShoppingBag size={15} className="text-[#EF5F18]" />
+                <span>Pedido</span>
               </div>
             </motion.div>
           </div>
@@ -619,48 +642,69 @@ function App() {
                 <form onSubmit={handleSubmit} className="register-form">
                   <div className="input-group">
                     <label htmlFor="name-input" className="input-label">Nombre Completo</label>
-                    <input
-                      id="name-input"
-                      type="text"
-                      placeholder="Tu nombre completo..."
-                      className="input-field"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (status === 'error') setStatus('idle');
-                      }}
-                      disabled={status === 'loading'}
-                    />
+                    <BorderBeam 
+                      duration={6} 
+                      borderWidth={1.5} 
+                      className="group w-full"
+                      beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                    >
+                      <input
+                        id="name-input"
+                        type="text"
+                        placeholder="Tu nombre completo..."
+                        className="input-field"
+                        value={name}
+                        onChange={(e) => {
+                          setName(e.target.value);
+                          if (status === 'error') setStatus('idle');
+                        }}
+                        disabled={status === 'loading'}
+                      />
+                    </BorderBeam>
                   </div>
                   <div className="input-group">
                     <label htmlFor="phone-input" className="input-label">Número de Teléfono</label>
-                    <input
-                      id="phone-input"
-                      type="tel"
-                      placeholder="Tu número de teléfono..."
-                      className="input-field"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        if (status === 'error') setStatus('idle');
-                      }}
-                      disabled={status === 'loading'}
-                    />
+                    <BorderBeam 
+                      duration={6} 
+                      borderWidth={1.5} 
+                      className="group w-full"
+                      beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                    >
+                      <input
+                        id="phone-input"
+                        type="tel"
+                        placeholder="Tu número de teléfono..."
+                        className="input-field"
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value);
+                          if (status === 'error') setStatus('idle');
+                        }}
+                        disabled={status === 'loading'}
+                      />
+                    </BorderBeam>
                   </div>
                   <div className="input-group">
                     <label htmlFor="email-input" className="input-label">Correo Electrónico</label>
-                    <input
-                      id="email-input"
-                      type="email"
-                      placeholder="Ingresa tu correo electrónico..."
-                      className="input-field"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (status === 'error') setStatus('idle');
-                      }}
-                      disabled={status === 'loading'}
-                    />
+                    <BorderBeam 
+                      duration={6} 
+                      borderWidth={1.5} 
+                      className="group w-full"
+                      beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                    >
+                      <input
+                        id="email-input"
+                        type="email"
+                        placeholder="Ingresa tu correo electrónico..."
+                        className="input-field"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (status === 'error') setStatus('idle');
+                        }}
+                        disabled={status === 'loading'}
+                      />
+                    </BorderBeam>
                   </div>
                   <ShimmerButton 
                     type="submit" 
@@ -694,89 +738,167 @@ function App() {
             {/* MÓVIL 3D EN EL HERO */}
             <div className="benefits-visual">
               <div className="visual-perspective-container">
-                {/* Elementos flotantes 3D en Parallax */}
-                <motion.div 
-                  className="floating-element pin-float"
-                  style={{ y: floatY1, rotate: -12 }}
-                >
-                  <MapPoint size={18} className="float-icon" />
-                  <span>Cerca de ti</span>
-                </motion.div>
-                
-                <motion.div 
-                  className="floating-element truck-float"
-                  style={{ y: floatY2, rotate: 14 }}
-                >
-                  <Truck size={18} className="float-icon" />
-                  <span>Envíos rápidos</span>
-                </motion.div>
-                
-                <motion.div 
-                  className="floating-element store-float"
-                  style={{ y: floatY3, rotate: -6 }}
-                >
-                  <Store size={18} className="float-icon" />
-                  <span>Socio COFLY</span>
-                </motion.div>
-
                 {/* El Móvil 3D */}
-                {/* 
-                  💡 PASO PARA USAR UN SVG ANIMADO EN EL HÉROE:
-                  Si prefieres usar un SVG animado (ej. colocado en public/animations/hero.svg),
-                  descomenta la siguiente línea y puedes ocultar/remover el motion.div de "phone-3d-wrapper" de abajo.
-                  
-                  <img src="/animations/hero.svg" className="hero-svg-animation" alt="COFLY Animación Principal" style={{ width: '100%', height: 'auto', maxHeight: '480px', margin: '0 auto', display: 'block' }} />
-                */}
                 <motion.div 
                   className="phone-3d-wrapper"
                   style={{ 
                     rotateX, 
                     rotateY, 
-                    rotateZ, 
+                    rotateZ,
                     scale,
                     y: phoneY,
                     transformStyle: "preserve-3d"
                   }}
                 >
-                  <div className="phone-chassis">
-                    <div className="phone-screen-container">
-                      <div className="phone-dynamic-island"></div>
-                      
-                      <div className="phone-screen-content">
-                        {/* Simulación de Mapa Local */}
-                        <div className="phone-mock-map relative overflow-hidden flex items-center justify-center">
-                          <Ripple mainCircleSize={60} mainCircleOpacity={0.25} numCircles={4} className="opacity-75" />
-                          <div className="map-pin-indicator index-1 z-10">
-                            <MapPoint size={14} />
-                          </div>
-                          <div className="map-pin-indicator index-2 z-10">
-                            <Store size={14} />
-                          </div>
-                          <div className="map-pin-indicator index-3 z-10">
-                            <ShoppingBag size={14} />
-                          </div>
-                        </div>
-                        
-                        <div className="phone-screen-overlay"></div>
-                        
-                        {/* Logo de COFLY en el Centro (animado por Scroll) */}
-                        <motion.div 
-                          className="phone-logo-wrapper"
-                          style={{
-                            scale: logoScale,
-                            opacity: logoOpacity
-                          }}
-                        >
-                          <img src="/Logo Cofly.png" alt="COFLY Logo" className="phone-logo-img" />
-                        </motion.div>
+                  {/* Elementos flotantes 3D en Parallax (ahora internos para moverse en sincronicidad con el chasis) */}
+                  <motion.div 
+                    className="floating-element pin-float"
+                    style={{ y: floatY1, rotate: -12, z: 65 }}
+                  >
+                    <MapPoint size={18} className="float-icon" />
+                    <span>Cerca de ti</span>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="floating-element truck-float"
+                    style={{ y: floatY2, rotate: 14, z: 65 }}
+                  >
+                    <Truck size={18} className="float-icon" />
+                    <span>Envíos rápidos</span>
+                  </motion.div>
+                  
+                  <motion.div 
+                    className="floating-element store-float"
+                    style={{ y: floatY3, rotate: -6, z: 65 }}
+                  >
+                    <Store size={18} className="float-icon" />
+                    <span>Socio COFLY</span>
+                  </motion.div>
 
-                        <div className="phone-ui-footer">
-                          <div className="phone-ui-bar"></div>
-                        </div>
-                      </div>
-                      
-                      <div className="phone-screen-glare"></div>
+                  <div className="phone-chassis-3d">
+                    {/* Parte trasera (Backplate) */}
+                    <div className="phone-face phone-face-back">
+                      {/* Logo COFLY en la parte trasera estilo Apple logo */}
+                      <img src="/Logo Cofly.png" alt="COFLY Back Logo" className="phone-back-logo-img" />
                     </div>
+
+                    {/* Frente (Pantalla) */}
+                    <div className="phone-face phone-face-front">
+                      <div className="phone-screen-container">
+                        <div className="phone-dynamic-island"></div>
+                        
+                        <div className="phone-screen-content">
+                          {/* Simulación de Mapa Local con Calles y Ruta */}
+                          <div className="phone-mock-map relative overflow-hidden flex items-center justify-center">
+                            <svg className="absolute inset-0 w-full h-full opacity-25" xmlns="http://www.w3.org/2000/svg">
+                              {/* Líneas de Calles */}
+                              <path d="M 0 100 L 300 100 M 0 250 L 300 250 M 0 400 L 300 400" stroke="rgba(255,255,255,0.15)" strokeWidth="2.5" />
+                              <path d="M 60 0 L 60 520 M 180 0 L 180 520" stroke="rgba(255,255,255,0.15)" strokeWidth="2.5" />
+                              
+                              {/* Ruta de Entrega (Naranja Resplandeciente) */}
+                              <path 
+                                d="M 60 400 L 60 250 L 180 250 M 180 250 L 180 140" 
+                                stroke="#EF5F18" 
+                                strokeWidth="4" 
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                fill="none"
+                                className="animate-route-flow"
+                              />
+                            </svg>
+                            
+                            <Ripple mainCircleSize={50} mainCircleOpacity={0.2} numCircles={3} className="opacity-60" />
+                            
+                            {/* Indicadores de Pines en el mapa */}
+                            <div className="map-pin-indicator index-1 z-10">
+                              <Store size={12} />
+                            </div>
+                            <div className="map-pin-indicator index-2 z-10">
+                              <ShoppingBag size={12} />
+                            </div>
+                            <div className="map-pin-indicator index-3 z-10">
+                              <MapPoint size={12} />
+                            </div>
+                          </div>
+                          
+                          <div className="phone-screen-overlay"></div>
+
+                          {/* Barra de estado del móvil */}
+                          <div className="phone-status-bar">
+                            <span>9:41</span>
+                            <div className="phone-status-bar-icons">
+                              {/* Señal de cobertura iOS (4 barras curvas/rectangulares) */}
+                              <svg className="phone-signal-svg" viewBox="0 0 18 12" fill="currentColor">
+                                <rect x="0" y="8" width="2" height="3" rx="0.5" />
+                                <rect x="3.5" y="6" width="2" height="5" rx="0.5" />
+                                <rect x="7" y="4" width="2" height="7" rx="0.5" />
+                                <rect x="10.5" y="1.5" width="2" height="9.5" rx="0.5" />
+                              </svg>
+                              
+                              {/* Icono de Wi-Fi iOS */}
+                              <svg className="phone-wifi-svg" viewBox="0 0 16 12" fill="currentColor">
+                                <path d="M8 10a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm-3.5-3.5a5 5 0 0 1 7 0 .5.5 0 0 0 .7-.7 6 6 0 0 0-8.4 0 .5.5 0 0 0 .7.7zm-2.1-2.1a8 8 0 0 1 11.2 0 .5.5 0 0 0 .7-.7 9 9 0 0 0-12.6 0 .5.5 0 0 0 .7.7z" />
+                              </svg>
+
+                              {/* Batería iOS con contorno y pin cap lateral */}
+                              <svg className="phone-battery-svg" viewBox="0 0 24 12" fill="currentColor">
+                                <rect x="1" y="1" width="18" height="10" rx="3" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                                <rect x="3.5" y="3.5" width="11" height="5" rx="1" />
+                                <path d="M20 4.5v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          </div>
+
+                          {/* Notificación iOS Push / Live Activity en el Tope */}
+                          <div className="phone-notification">
+                            <div className="phone-notification-header">
+                              <div className="phone-notification-app-info">
+                                <div className="phone-notification-app-icon">C</div>
+                                <span>COFLY • AHORA</span>
+                              </div>
+                              <span className="phone-notification-status">Pedido en Curso</span>
+                            </div>
+                            
+                            <div className="phone-notification-body">
+                              <div className="phone-notification-content-wrapper">
+                                <div className="phone-notification-icon-box">
+                                  <Bicycle size={12} />
+                                </div>
+                                <div className="phone-notification-text">
+                                  <span className="phone-notification-title">Dulcinoa Delivery</span>
+                                  <span className="phone-notification-desc">Repartidor cerca de tu casa</span>
+                                </div>
+                              </div>
+                              <span className="phone-notification-time">12 min</span>
+                            </div>
+
+                            {/* Barra de progreso de entrega realista con punto de ciclista */}
+                            <div className="phone-notification-progress-bar">
+                              <div className="phone-notification-progress-fill"></div>
+                              {/* Ciclista flotante en el progreso */}
+                              <div className="phone-notification-progress-rider"></div>
+                            </div>
+                          </div>
+
+                          <div className="phone-ui-footer">
+                            <div className="phone-ui-bar"></div>
+                          </div>
+                        </div>
+                        
+                        <div className="phone-screen-glare"></div>
+                      </div>
+                    </div>
+                    
+                    {/* Laterales 3D */}
+                    <div className="phone-face phone-face-left">
+                      <div className="phone-button-volume-up"></div>
+                      <div className="phone-button-volume-down"></div>
+                    </div>
+                    <div className="phone-face phone-face-right">
+                      <div className="phone-button-power"></div>
+                    </div>
+                    <div className="phone-face phone-face-top"></div>
+                    <div className="phone-face phone-face-bottom"></div>
                   </div>
                 </motion.div>
               </div>
@@ -1217,39 +1339,60 @@ function App() {
             
             <form onSubmit={handleSubmit2} className="cta-bottom-form">
               <div className="cta-bottom-inputs">
-                <input
-                  type="text"
-                  placeholder="Tu nombre completo..."
-                  className="input-field"
-                  value={name2}
-                  onChange={(e) => {
-                    setName2(e.target.value);
-                    if (status2 === 'error') setStatus2('idle');
-                  }}
-                  disabled={status2 === 'loading'}
-                />
-                <input
-                  type="tel"
-                  placeholder="Tu número de teléfono..."
-                  className="input-field"
-                  value={phone2}
-                  onChange={(e) => {
-                    setPhone2(e.target.value);
-                    if (status2 === 'error') setStatus2('idle');
-                  }}
-                  disabled={status2 === 'loading'}
-                />
-                <input
-                  type="email"
-                  placeholder="Tu correo electrónico..."
-                  className="input-field"
-                  value={email2}
-                  onChange={(e) => {
-                    setEmail2(e.target.value);
-                    if (status2 === 'error') setStatus2('idle');
-                  }}
-                  disabled={status2 === 'loading'}
-                />
+                <BorderBeam 
+                  duration={6} 
+                  borderWidth={1.5} 
+                  className="group w-full"
+                  beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                >
+                  <input
+                    type="text"
+                    placeholder="Tu nombre completo..."
+                    className="input-field"
+                    value={name2}
+                    onChange={(e) => {
+                      setName2(e.target.value);
+                      if (status2 === 'error') setStatus2('idle');
+                    }}
+                    disabled={status2 === 'loading'}
+                  />
+                </BorderBeam>
+                <BorderBeam 
+                  duration={6} 
+                  borderWidth={1.5} 
+                  className="group w-full"
+                  beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                >
+                  <input
+                    type="tel"
+                    placeholder="Tu número de teléfono..."
+                    className="input-field"
+                    value={phone2}
+                    onChange={(e) => {
+                      setPhone2(e.target.value);
+                      if (status2 === 'error') setStatus2('idle');
+                    }}
+                    disabled={status2 === 'loading'}
+                  />
+                </BorderBeam>
+                <BorderBeam 
+                  duration={6} 
+                  borderWidth={1.5} 
+                  className="group w-full"
+                  beamClassName="opacity-0 group-focus-within:opacity-100 group-hover:opacity-60 transition-opacity duration-300"
+                >
+                  <input
+                    type="email"
+                    placeholder="Tu correo electrónico..."
+                    className="input-field"
+                    value={email2}
+                    onChange={(e) => {
+                      setEmail2(e.target.value);
+                      if (status2 === 'error') setStatus2('idle');
+                    }}
+                    disabled={status2 === 'loading'}
+                  />
+                </BorderBeam>
               </div>
               <ShimmerButton 
                 type="submit" 

@@ -618,6 +618,7 @@ html, body {
   width: 100%;
   height: 540px;
   perspective: 1200px;
+  transform-style: preserve-3d;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -631,29 +632,139 @@ html, body {
   height: 520px;
   transform-style: preserve-3d;
   will-change: transform;
+  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, 0.65));
 }
 
-.phone-chassis {
+.phone-chassis-3d {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: #181920;
-  border-radius: 42px;
-  border: 12px solid #282a35; /* Bisel metálico oscuro */
-  box-shadow: 
-    0 30px 60px -15px rgba(37, 26, 101, 0.3),
-    0 0 50px rgba(239, 95, 24, 0.08),
-    inset 0 0 12px rgba(255, 255, 255, 0.12);
   transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Reglas comunes de las caras del móvil 3D */
+.phone-face {
+  position: absolute;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+/* Cara Frontal (Pantalla) */
+.phone-face-front {
+  width: 100%;
+  height: 100%;
+  transform: translateZ(8px);
+  border-radius: 42px;
+  border: 9px solid #1a1c23; /* Marco de Titanio */
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.95);
+  z-index: 2;
+  background: #0b0c10;
+}
+
+/* Cara Trasera (Tapa trasera) */
+.phone-face-back {
+  width: 100%;
+  height: 100%;
+  transform: translateZ(-8px) rotateY(180deg);
+  border-radius: 42px;
+  border: 9px solid #1a1c23;
+  background: linear-gradient(135deg, #181920 0%, #0d0f15 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.95);
+}
+
+.phone-back-logo-img {
+  width: 65px;
+  height: auto;
+  opacity: 0.12;
+  filter: brightness(0.95) contrast(1.1);
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+}
+
+/* Caras de los bordes laterales (Volumetría 3D) */
+.phone-face-left {
+  width: 16px;
+  height: calc(100% - 100px); /* Adaptativa al alto del contenedor */
+  top: 50px;
+  left: -8px;
+  transform: rotateY(-90deg);
+  background: #1a1c23;
+  border-radius: 2px;
+}
+
+.phone-face-right {
+  width: 16px;
+  height: calc(100% - 100px); /* Adaptativa al alto del contenedor */
+  top: 50px;
+  right: -8px;
+  transform: rotateY(90deg);
+  background: #1a1c23;
+  border-radius: 2px;
+}
+
+.phone-face-top {
+  width: calc(100% - 100px); /* Adaptativa al ancho del contenedor */
+  height: 16px;
+  left: 50px;
+  top: -8px;
+  transform: rotateX(90deg);
+  background: #1a1c23;
+  border-radius: 2px;
+}
+
+.phone-face-bottom {
+  width: calc(100% - 100px); /* Adaptativa al ancho del contenedor */
+  height: 16px;
+  left: 50px;
+  bottom: -8px;
+  transform: rotateX(-90deg);
+  background: #1a1c23;
+  border-radius: 2px;
+}
+
+/* Botones laterales incrustados en las caras 3D */
+.phone-button-volume-up,
+.phone-button-volume-down,
+.phone-button-power {
+  position: absolute;
+  background: #3c3e4c;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.phone-button-volume-up {
+  top: 90px;
+  left: 6px;
+  width: 4px;
+  height: 35px;
+}
+
+.phone-button-volume-down {
+  top: 140px;
+  left: 6px;
+  width: 4px;
+  height: 35px;
+}
+
+.phone-button-power {
+  top: 120px;
+  left: 6px;
+  width: 4px;
+  height: 50px;
 }
 
 .phone-screen-container {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 30px;
+  border-radius: 34px;
   position: relative;
-  background: #0d0e12;
+  background: #0b0c10;
   display: flex;
   flex-direction: column;
 }
@@ -661,15 +772,17 @@ html, body {
 /* Cámara Frontal / Isla Dinámica */
 .phone-dynamic-island {
   position: absolute;
-  top: 14px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
-  height: 22px;
+  width: 76px;
+  height: 20px;
   background: #000000;
   border-radius: 12px;
-  z-index: 10;
-  box-shadow: inset 0 1px 2px rgba(255,255,255,0.1);
+  z-index: 25;
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.15),
+    0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* Pantalla interna */
@@ -683,6 +796,7 @@ html, body {
   align-items: center;
 }
 
+
 /* Mapa simulado */
 .phone-mock-map {
   position: absolute;
@@ -690,31 +804,21 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 50% 50%, #1e2230 0%, #0d0f15 100%);
+  background: radial-gradient(circle at 50% 50%, #151824 0%, #07080c 100%);
   overflow: hidden;
 }
 
-/* Ondas de radar/sincronización */
-.map-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border: 1.5px solid rgba(239, 95, 24, 0.18);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
+/* Animación del trazado GPS de entrega */
+.animate-route-flow {
+  stroke-dasharray: 8 4;
+  animation: routeFlow 1.5s linear infinite;
+  filter: drop-shadow(0 0 5px rgba(239, 95, 24, 0.7));
 }
 
-.map-circle.ripple-1 {
-  width: 160px;
-  height: 160px;
-  animation: pulseRipple 4s infinite linear;
-}
-
-.map-circle.ripple-2 {
-  width: 320px;
-  height: 320px;
-  animation: pulseRipple 4s infinite linear;
-  animation-delay: 2s;
+@keyframes routeFlow {
+  to {
+    stroke-dashoffset: -24;
+  }
 }
 
 /* Indicadores de Pines en el mapa */
@@ -727,29 +831,32 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(239, 95, 24, 0.4);
+  box-shadow: 0 4px 10px rgba(239, 95, 24, 0.5);
   animation: bouncePin 3s infinite ease-in-out;
 }
 
+/* Pines alineados exactamente en las intersecciones vectoriales */
 .map-pin-indicator.index-1 {
-  top: 25%;
-  left: 20%;
-  background: var(--navy);
-  box-shadow: 0 6px 14px rgba(37, 26, 101, 0.4);
+  top: 19%;
+  left: 23%;
+  background: #0088cc; /* Domiciliario o punto intermedio */
+  box-shadow: 0 4px 10px rgba(0, 136, 204, 0.5);
   animation-delay: 0.3s;
 }
 
 .map-pin-indicator.index-2 {
-  top: 68%;
-  left: 72%;
+  top: 48%;
+  left: 69%;
+  background: #251a65; /* Comercio Socio */
+  box-shadow: 0 4px 10px rgba(37, 26, 101, 0.5);
   animation-delay: 0.9s;
 }
 
 .map-pin-indicator.index-3 {
-  top: 18%;
-  left: 68%;
-  background: var(--taupe);
-  box-shadow: 0 6px 14px rgba(156, 119, 100, 0.4);
+  top: 77%;
+  left: 23%;
+  background: var(--primary); /* Destino Cliente */
+  box-shadow: 0 4px 10px rgba(239, 95, 24, 0.6);
   animation-delay: 1.6s;
 }
 
@@ -760,7 +867,7 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(13, 14, 18, 0.2) 0%, rgba(13, 14, 18, 0.8) 100%);
+  background: linear-gradient(180deg, rgba(7, 8, 12, 0.4) 0%, rgba(7, 8, 12, 0.85) 100%);
   pointer-events: none;
   z-index: 2;
 }
@@ -823,10 +930,8 @@ html, body {
 /* Elementos Flotantes (Parallax) */
 .floating-element {
   position: absolute;
-  background: rgba(255, 255, 255, 0.9);
+  background: #ffffff; /* Fondo sólido para evitar fallos de renderizado 3D en WebKit */
   border: 1.5px solid var(--outline-variant);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   padding: 10px 18px;
   border-radius: var(--rounded-full);
   display: flex;
@@ -851,19 +956,20 @@ html, body {
 }
 
 .pin-float {
-  top: 18%;
-  left: -8%;
+  top: 80px;
+  left: -120px;
 }
 
 .truck-float {
-  top: 55%;
-  right: -10%;
+  bottom: 80px;
+  right: -120px;
 }
 
 .store-float {
-  bottom: 12%;
-  left: -4%;
+  bottom: 150px;
+  left: -120px;
 }
+
 
 /* Keyframes de animación */
 @keyframes pulseRipple {
@@ -2223,17 +2329,44 @@ html, body {
   .phone-logo-img {
     width: 90px;
   }
+  .floating-element {
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+  }
   .pin-float {
-    left: 2%;
-    top: 15%;
+    left: -90px;
+    top: 60px;
   }
   .truck-float {
-    right: 2%;
-    top: 55%;
+    right: -90px;
+    bottom: 70px;
   }
   .store-float {
-    left: 5%;
-    bottom: 10%;
+    left: -90px;
+    bottom: 130px;
+  }
+  
+  /* Ajuste responsivo de la barra de estado y chasis en tablets */
+  .phone-status-bar {
+    padding: 12px 18px 4px 18px !important;
+    font-size: 8.5px !important;
+  }
+  .phone-signal-svg {
+    width: 10px !important;
+    height: 7px !important;
+  }
+  .phone-wifi-svg {
+    width: 9px !important;
+    height: 7px !important;
+  }
+  .phone-battery-svg {
+    width: 15px !important;
+    height: 7px !important;
+  }
+  .phone-dynamic-island {
+    width: 65px !important;
+    height: 16px !important;
+    top: 8px !important;
   }
 
   /* Bento responsive */
@@ -2337,27 +2470,45 @@ html, body {
     border-radius: 22px;
   }
   .phone-dynamic-island {
-    width: 60px;
-    height: 16px;
-    top: 8px;
+    width: 52px !important;
+    height: 13px !important;
+    top: 6px !important;
   }
   .phone-logo-img {
     width: 80px;
   }
   .floating-element {
-    padding: 6px 12px;
-    font-size: 11px;
+    padding: 4px 8px !important;
+    font-size: 9.5px !important;
   }
   .pin-float {
-    left: -2%;
-    top: 10%;
+    left: -60px;
+    top: 40px;
   }
   .truck-float {
-    right: -2%;
-    top: 50%;
+    right: -60px;
+    bottom: 50px;
   }
   .store-float {
     display: none;
+  }
+  
+  /* Ajuste responsivo extremo de la barra de estado en móviles */
+  .phone-status-bar {
+    padding: 10px 14px 4px 14px !important;
+    font-size: 8px !important;
+  }
+  .phone-signal-svg {
+    width: 9px !important;
+    height: 6.5px !important;
+  }
+  .phone-wifi-svg {
+    width: 8px !important;
+    height: 6.5px !important;
+  }
+  .phone-battery-svg {
+    width: 13px !important;
+    height: 6.5px !important;
   }
   .benefit-item h4 {
     font-size: 16px;
@@ -2510,11 +2661,11 @@ button {
    ========================================== */
 .hero-particles-overlay {
   pointer-events: none;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero-particle {
-  z-index: 10;
+  z-index: 1; /* Shrunk from 10 to 1 so background particles hover behind form text and inputs */
   will-change: transform;
 }
 
@@ -2538,18 +2689,39 @@ button {
 
 .particle-wrapper {
   animation: float-slow 4s ease-in-out infinite alternate;
-  background: var(--surface-container-low);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--outline-variant);
-  box-shadow: var(--shadow-md);
-  color: var(--on-surface);
+  border: 1.5px solid rgba(239, 95, 24, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 9999px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+
+.particle-wrapper span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+[data-theme="dark"] .particle-wrapper {
+  background: rgba(18, 19, 26, 0.9);
+  border-color: rgba(239, 95, 24, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .particle-wrapper span {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .particle-wrapper:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 20px rgba(239, 95, 24, 0.2);
+  box-shadow: 0 6px 20px rgba(239, 95, 24, 0.2);
 }
 
 @keyframes float-slow {
@@ -2616,6 +2788,8 @@ button {
   width: 100%;
   padding-top: 16px !important;
   padding-bottom: 16px !important;
+  mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%);
 }
 
 
@@ -2859,5 +3033,242 @@ button {
   box-shadow: 0 6px 20px rgba(239, 95, 24, 0.3);
 }
 
+/* ==========================================
+   INTERFAZ DE CELULAR MAQUETADA (ESTILO iOS)
+   ========================================== */
 
+/* Barra de estado iOS */
+.phone-status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 30px 4px 30px;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  font-size: 9.5px;
+  font-weight: 600;
+  box-sizing: border-box;
+}
 
+.phone-status-bar-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-signal-svg {
+  width: 12px;
+  height: 8px;
+  opacity: 0.9;
+}
+
+.phone-wifi-svg {
+  width: 11px;
+  height: 8px;
+  opacity: 0.9;
+}
+
+.phone-battery-svg {
+  width: 18px;
+  height: 8px;
+  opacity: 0.95;
+}
+
+/* Notificación Push iOS (Live Activity) */
+.phone-notification {
+  position: absolute;
+  top: 48px;
+  left: 14px;
+  right: 14px;
+  padding: 12px;
+  background: rgba(18, 19, 26, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.phone-notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.phone-notification-app-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.phone-notification-app-icon {
+  width: 10px;
+  height: 10px;
+  background: #EF5F18;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.phone-notification-status {
+  color: #EF5F18;
+}
+
+.phone-notification-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.phone-notification-content-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.phone-notification-icon-box {
+  padding: 6px;
+  background: rgba(239, 95, 24, 0.15);
+  border-radius: 8px;
+  color: #EF5F18;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-notification-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-notification-title {
+  font-size: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.phone-notification-desc {
+  font-size: 8.5px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 1px;
+}
+
+.phone-notification-time {
+  font-size: 9px;
+  color: #EF5F18;
+  font-weight: 800;
+  background: rgba(239, 95, 24, 0.10);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.phone-notification-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  margin-top: 2px;
+}
+
+.phone-notification-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 70%;
+  background: linear-gradient(to right, #EF5F18, #f97316);
+  border-radius: 2px;
+}
+
+.phone-notification-progress-rider {
+  position: absolute;
+  top: 50%;
+  left: 70%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #EF5F18;
+  border-radius: 50%;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  animation: pulseRider 1.5s infinite;
+}
+
+@keyframes pulseRider {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 95, 24, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 4px rgba(239, 95, 24, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 95, 24, 0);
+  }
+}
+
+/* Borde animado rotativo compatible con todos los navegadores (Estilo Conic Gradient) */
+.border-beam-conic {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: var(--border-width, 1.5px) solid transparent;
+  border-radius: inherit;
+  box-sizing: border-box;
+  overflow: hidden; /* Recorta el pseudo-elemento rotativo dentro del borde */
+  
+  /* Máscara universal para siluetar el borde (hollow outline effect) */
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+}
+
+.border-beam-conic::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%; /* Suficientemente grande para cubrir las esquinas al rotar */
+  height: 300%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  background: conic-gradient(
+    from 0deg,
+    var(--color-from, #EF5F18) 0deg,
+    var(--color-to, #251a65) 60deg,
+    transparent 120deg,
+    transparent 360deg
+  );
+  animation: border-beam-spin var(--duration, 4s) linear infinite;
+  animation-delay: var(--delay, 0s);
+  will-change: transform;
+}
+
+@keyframes border-beam-spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
