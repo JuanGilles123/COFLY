@@ -19,8 +19,9 @@ import {
   User
 } from 'reicon-react';
 import { registerEmail } from './lib/database';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import { Marquee } from './components/magicui/Marquee';
+
 
 // Importaciones de Magic UI
 import { Ripple } from './components/magicui/Ripple';
@@ -144,6 +145,69 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Componente de Animación de Texto por Carácter (tipo Svelte Magic UI TextAnimate blurInUp)
+function TextAnimate({ content, className = "", delay = 0 }) {
+  const characters = Array.from(content);
+  
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.02,
+        delayChildren: delay
+      }
+    }
+  };
+  
+  const charVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      filter: "blur(4px)"
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  };
+  
+  const words = content.split(' ');
+
+  return (
+    <motion.span 
+      className={`inline ${className}`}
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: false }}
+    >
+      {words.map((word, wIdx) => (
+        <React.Fragment key={wIdx}>
+          <span className="inline-block whitespace-nowrap">
+            {Array.from(word).map((char, cIdx) => (
+              <motion.span 
+                key={cIdx} 
+                variants={charVariants} 
+                className="inline-block"
+              >
+                {char}
+              </motion.span>
+            ))}
+          </span>
+          {wIdx < words.length - 1 && ' '}
+        </React.Fragment>
+      ))}
+    </motion.span>
+  );
+
+}
+
 function App() {
   // Estado para manejar la ruta actual (Error 404)
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -192,6 +256,25 @@ function App() {
       window.history.replaceState = originalReplaceState;
     };
   }, []);
+
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   // Formulario superior
   const [email, setEmail] = useState('');
@@ -263,15 +346,32 @@ function App() {
   };
 
   const bentoItemVariants = {
-    hidden: { y: 40, scale: 0.96, opacity: 0 },
+    hidden: { y: 40, scale: 0.96, opacity: 0, filter: "blur(8px)" },
     show: { 
       y: 0, 
       scale: 1, 
       opacity: 1,
+      filter: "blur(0px)",
       transition: {
         type: "spring",
         stiffness: 90,
         damping: 18
+      }
+    }
+  };
+
+  // Animación blurInUp estilo Svelte para secciones al hacer scroll
+  const blurInUpVariants = {
+    hidden: { opacity: 0, y: 50, filter: "blur(12px)" },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      filter: "blur(0px)",
+      transition: {
+        type: "spring",
+        stiffness: 50,
+        damping: 15,
+        duration: 0.8
       }
     }
   };
@@ -503,8 +603,13 @@ function App() {
               />
 
               <h1 className="hero-title">
-                La plataforma que conecta tu <span>negocio local</span> con clientes
+                <TextAnimate content="La plataforma que conecta tu " />
+                <span>
+                  <TextAnimate content="negocio local" delay={0.6} />
+                </span>
+                <TextAnimate content=" con clientes" delay={0.9} />
               </h1>
+
               
               <p className="hero-subtitle">
                 Encuentra y contacta directamente con los comercios y servicios de tu barrio. Si tienes un negocio, patrocínate para aparecer de primero y atraer a más clientes, contando con la red de domiciliarios que COFLY provee para ti.
@@ -736,7 +841,7 @@ function App() {
             variants={bentoContainerVariants}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: false, margin: "-100px" }}
           >
             
             {/* Tarjeta 1: Conexión Directa (8/12) con Chat Simulado */}
@@ -921,7 +1026,13 @@ function App() {
 
 
         {/* Sección de Cómo Funciona */}
-        <section className="how-it-works-section">
+        <motion.section 
+          className="how-it-works-section"
+          variants={blurInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-100px" }}
+        >
           <h2 className="section-title">¿Cómo funciona COFLY?</h2>
           <div className="how-it-works-grid">
             <div className="how-card">
@@ -957,10 +1068,17 @@ function App() {
               </p>
             </div>
           </div>
-        </section>
+        </motion.section>
+
 
         {/* Sección de Logística y Entrega Local Rápida */}
-        <section className="interactive-map-section">
+        <motion.section 
+          className="interactive-map-section"
+          variants={blurInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-100px" }}
+        >
           <div className="map-intro-text">
             <h2 className="section-title">Logística y Entrega Local Directa</h2>
             <p>
@@ -975,10 +1093,17 @@ function App() {
               style={{ width: '100%', maxWidth: '580px', height: 'auto', display: 'block', margin: '0 auto' }}
             />
           </div>
-        </section>
+        </motion.section>
+
 
         {/* Sección de Beneficios de la Beta */}
-        <section className="benefits-section">
+        <motion.section 
+          className="benefits-section"
+          variants={blurInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-100px" }}
+        >
           <div className="benefits-content">
             <div className="benefits-text">
               <h2>Únete hoy como Socio o Usuario Fundador</h2>
@@ -1027,10 +1152,17 @@ function App() {
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
+
 
         {/* Sección de Preguntas Frecuentes (FAQ) */}
-        <section className="faq-section">
+        <motion.section 
+          className="faq-section"
+          variants={blurInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-100px" }}
+        >
           <h2 className="section-title">Preguntas Frecuentes</h2>
           <div className="faq-list">
             {[
@@ -1068,10 +1200,17 @@ function App() {
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
+
 
         {/* Sección CTA Final de Registro */}
-        <section className="cta-bottom-section">
+        <motion.section 
+          className="cta-bottom-section"
+          variants={blurInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, margin: "-100px" }}
+        >
           <div className="cta-bottom-card">
             <h2>Sé el primero en usar COFLY en tu zona</h2>
             <p>Registra tu correo electrónico en nuestra lista de espera exclusiva y asegura tu acceso prioritario a la beta cerrada hoy mismo.</p>
@@ -1139,7 +1278,8 @@ function App() {
               </div>
             )}
           </div>
-        </section>
+        </motion.section>
+
 
         {/* Footer */}
         <footer className="footer">
@@ -1149,6 +1289,35 @@ function App() {
             <a href="#privacidad">Privacidad</a>
           </div>
         </footer>
+        {/* Botón flotante para volver arriba */}
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.button
+              onClick={scrollToTop}
+              initial={{ opacity: 0, scale: 0.8, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20 }}
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.9 }}
+              className="scroll-to-top-btn"
+              aria-label="Volver arriba"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="m18 15-6-6-6 6"/>
+              </svg>
+            </motion.button>
+          )}
+        </AnimatePresence>
       </div>
     </div>
     </ErrorBoundary>

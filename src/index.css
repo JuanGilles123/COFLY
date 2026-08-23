@@ -2520,16 +2520,16 @@ button {
 
 /* Posiciones relativas dispersas en el Hero */
 .particle-bike {
-  top: 15%;
-  left: 5%;
+  top: 6%;
+  left: -30px;
 }
 .particle-map {
   top: 22%;
   right: 12%;
 }
 .particle-store {
-  bottom: 28%;
-  left: 8%;
+  bottom: 42%;
+  left: -40px;
 }
 .particle-bag {
   bottom: 18%;
@@ -2808,13 +2808,56 @@ button {
     margin: 16px 0 48px 0;
   }
   .partner-card {
-    width: 200px;
-    height: 90px;
-    padding: 12px;
+    width: 210px;
+    height: 110px;
+    padding: 12px 12px 8px 12px;
+  }
+  .partner-logo-wrapper {
+    height: 48px;
+  }
+  .partner-logo-img, .partner-logo-img-custom {
+    max-height: 40px;
+    max-width: 150px;
   }
   .cosmic-text {
     font-size: 12px;
   }
 }
+
+/* Botón flotante para volver arriba */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+[data-theme="dark"] .scroll-to-top-btn {
+  background: rgba(26, 26, 26, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--on-surface);
+}
+
+.scroll-to-top-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 6px 20px rgba(239, 95, 24, 0.3);
+}
+
 
 
